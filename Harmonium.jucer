@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<JUCERPROJECT id="ilO8TX" name="Harmonium" projectType="audioplug" useAppConfig="0"
+              addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" pluginFormats="buildStandalone,buildVST3"
+              pluginCharacteristicsValue="pluginIsSynth,pluginWantsMidiIn"
+              pluginManufacturer="rb341" pluginCode="HmPE">
+  <MAINGROUP id="Bocj2O" name="Harmonium">
+    <GROUP id="{44AB6928-0ED5-C78F-942C-ECAB500A407F}" name="Source">
+      <FILE id="qqqZuH" name="Harmonium.h" compile="0" resource="0" file="Source/Harmonium.h"/>
+      <FILE id="MMWVaL" name="Voice.h" compile="0" resource="0" file="Source/Voice.h"/>
+      <FILE id="TSsuwr" name="HarmoniumPhysicsEngine.h" compile="0" resource="0"
+            file="Source/HarmoniumPhysicsEngine.h"/>
+      <FILE id="pApbx9" name="HarmoniumPhysicsState.h" compile="0" resource="0"
+            file="Source/HarmoniumPhysicsState.h"/>
+      <FILE id="i0BQSq" name="PluginProcessor.cpp" compile="1" resource="0"
+            file="Source/PluginProcessor.cpp"/>
+      <FILE id="R9WaAu" name="PluginProcessor.h" compile="0" resource="0"
+            file="Source/PluginProcessor.h"/>
+      <FILE id="Bn7127" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
+    </GROUP>
+  </MAINGROUP>
+  <MODULES>
+    <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_plugin_client" showAllCode="1" useLocalCopy="0"
+            useGlobalPath="1"/>
+    <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+  </MODULES>
+  <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>
+  <EXPORTFORMATS>
+    <XCODE_MAC targetFolder="Builds/MacOSX" postbuildCommand="# Clean extended attributes before code signing&#10;if [ -d &quot;$BUILT_PRODUCTS_DIR/$FULL_PRODUCT_NAME&quot; ]; then&#10;    echo &quot;Cleaning extended attributes...&quot;&#10;    xattr -cr &quot;$BUILT_PRODUCTS_DIR/$FULL_PRODUCT_NAME&quot;&#10;fi&#10;&#10;# Clean the installed plugin too&#10;if [ -d &quot;$INSTALL_PATH/$FULL_PRODUCT_NAME&quot; ]; then&#10;    echo &quot;Cleaning installed plugin attributes...&quot;&#10;    xattr -cr &quot;$INSTALL_PATH/$FULL_PRODUCT_NAME&quot;&#10;fi">
+      <CONFIGURATIONS>
+        <CONFIGURATION isDebug="1" name="Debug" targetName="Harmonium"/>
+        <CONFIGURATION isDebug="0" name="Release" targetName="Harmonium"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_audio_basics" path="../../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_plugin_client" path="../../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_utils" path="../../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_core" path="../../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_events" path="../../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../../../../../../JUCE/modules"/>
+      </MODULEPATHS>
+    </XCODE_MAC>
+  </EXPORTFORMATS>
+</JUCERPROJECT>
