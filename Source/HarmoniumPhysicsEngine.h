@@ -177,12 +177,12 @@ private:
     
     // Jet dynamics update (Equations 2 & 3)
     static void updateJetDynamics(HarmoniumPhysicsState& state, const HarmoniumPhysicsConfig& config) {
-        // Equation 2: p₁ = p₂ + ρ₀L₂/S₂ × du/dt
+    /// Equation 2:   p₁  =  p₂  +  ρ₀L₂/S₂  ×  du/dt
         double du_dt = (state.u - state.u_previous) / config.dt;
         double inertialDrop = (config.rho0 * config.L2 / config.S2) * du_dt;
         state.p2 = state.p1 - inertialDrop;
         
-        // Equation 3: p₂ = p_atm + ½ρ₀vⱼ²
+    /// Equation 3: p₂ = p_atm + ½ρ₀vⱼ²
         double pressureDiff = state.p2 - config.p_atm;
         if (pressureDiff > 0.0) {
             state.vj = std::sqrt(2.0 * pressureDiff / config.rho0);

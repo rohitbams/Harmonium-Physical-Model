@@ -19,6 +19,8 @@ public:
         double reedVelocity = 0.0;      // Reed velocity
         int oscillatingReeds = 0;       // Number of oscillating reeds
         double averageAmplitude = 0.0;  // Average reed amplitude
+        
+
     };
 
 private:
@@ -36,6 +38,15 @@ private:
         double modWheelValue_ = 0.0;    // 0.0 to 1.0
         bool keyPressed_ = false;
         double baseConsumptionRate_ = 0.003;  // kg/s
+        double maxPumpingRate_ = 0.01;
+        
+        // dynamic pumping state
+        double basePumpingRate = 0.005;
+        double discretePumpAmount = 0.002;
+        double pumpingSensitivity = 0.05;
+        double currentPumpingRate = 0.0;
+        double dynamicPressure = 0.0;
+        double basePressure = 0.0;
         
     public:
         Bellows(double sampleRate) : sampleRate_(sampleRate), dt_(1.0/sampleRate) {}
@@ -44,11 +55,16 @@ private:
         // TODO: noteStart should depend on the p1 (pressure in reed chamber, not bellow chamber)
         void updateBellows(double chamberPressure) {
             // Bellow pumping mechanism mod wheel adds air
-            if (modWheelValue_ > 0.1) {
-                double pumpingRate = modWheelValue_ * 0.01 * dt_;
+            double pumpingIntensity = 1.0 - modWheelValue_;  // Invert the relationship
+            if (pumpingIntensity > 0.1) {  // Only pump when mod wheel is down
+                double pumpingRate = pumpingIntensity * maxPumpingRate_ * dt_;
+
                 airMass_ += pumpingRate;
                 airMass_ = std::min(airMass_, maxAirMass_);
             }
+            
+            DBG("modWHeelValue: " + juce::String(modWheelValue_));
+            
             
             // Air consumption when key pressed
             if (keyPressed_ && airMass_ > 0.0) {
@@ -353,3 +369,4 @@ private:
         currentState_.averageAmplitude = getAverageReedAmplitude();
     }
 };
+
