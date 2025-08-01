@@ -4,7 +4,6 @@
 #include <memory>
 #include <array>
 #include "Voice.h"
-#include "Harmonium.h"
 
 class Harmonium {
 public:
@@ -40,8 +39,6 @@ private:
     public:
         Bellows(double sampleRate) : sampleRate_(sampleRate), dt_(1.0/sampleRate) {}
         
-        // TODO: add realistic pumping mechanism
-        // TODO: noteStart should depend on the p1 (pressure in reed chamber, not bellow chamber)
         void updateBellows(double chamberPressure) {
             // Bellow pumping mechanism mod wheel adds air
             if (modWheelValue_ > 0.1) {
@@ -157,10 +154,8 @@ public:
     }
     
     // Musical interface
-    // TODO: why is the new note being played when an old note is held???
     void startNote(double frequency) {
-        // if (bellows_->getAirMass() < 0.001) {
-        if (currentState_.p1 > 0.001) {
+        if (bellows_->getAirMass() < 0.001) {
             DBG("No air in reservoir - note blocked");
             return;
         }
@@ -279,8 +274,6 @@ public:
     }
 
 private:
-    std::unique_ptr<Harmonium> harmonium;
-    
     Voice* selectVoice() {
         if (isPolyphonic_) {
             // Find available voice
