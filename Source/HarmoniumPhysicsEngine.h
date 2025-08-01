@@ -28,7 +28,7 @@ public:
         handleOscillationStartup(newState, config);
         
         // Step 4: Apply energy input for sustained oscillation
-        applyEnergyInput(newState, config);
+        applyEnergyInput(newState, config, omega0);
         
         // Step 5: Integrate reed motion (Equation 4)
         integrateReedMotion(newState, config);
@@ -115,12 +115,26 @@ private:
         }
     }
     
-    // Energy input mechanism (key breakthrough for sustained oscillation)
-    static void applyEnergyInput(HarmoniumPhysicsState& state, const HarmoniumPhysicsConfig& config) {
+    // Energy input mechanism adds extra energy into the excitation
+    // TODO: still needs fixing for lower notes
+    static void applyEnergyInput(HarmoniumPhysicsState& state, const HarmoniumPhysicsConfig& config, double omega0) {
         double currentAmplitude = std::abs(state.reedPosition);
         double amplitudeRatio = std::min(1.0, currentAmplitude / config.targetAmplitude);
         double energyReduction = 1.0 - amplitudeRatio;
-        double energyInputStrength = 10.0 * energyReduction;
+        
+        // FREQUENCY-DEPENDENT ENERGY INPUT
+        double frequency = omega0 / (2.0 * M_PI);
+        double frequencyFactor = 1.0;
+        
+        if (frequency < 100.0) {        // Very low notes (like G1 = ~49Hz)
+            frequencyFactor = 3.0;      // 3x more energy
+        } else if (frequency < 200.0) { // Low notes
+            frequencyFactor = 2.0;      // 2x more energy
+        }
+        
+        double energyInputStrength = 10.0 * energyReduction * frequencyFactor;
+        
+        
         double airflowEnergyInput = config.mu * state.p2 * config.dt * energyInputStrength;
 
         if (currentAmplitude < config.targetAmplitude && std::abs(state.reedVelocity) > 0.001) {
