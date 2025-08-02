@@ -167,9 +167,12 @@ public:
             avgChamberPressure /= activeCount;
         }
         
-        int activeVoices = getActiveVoiceCount();
-        // Update bellows
-        bellows_->updateBellows(avgChamberPressure, activeVoices);
+//        int activeVoices = getActiveVoiceCount();
+//        // Update bellows
+//        bellows_->updateBellows(avgChamberPressure, activeVoices);
+        
+        int oscillatingReeds = getTotalOscillatingReeds();
+        bellows_->updateBellows(avgChamberPressure, oscillatingReeds);
         
         // Process all voices
         float mixedOutput = 0.0f;
