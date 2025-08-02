@@ -32,25 +32,22 @@ private:
         double sampleRate_;
         double dt_;
         double airMass_ = 0.003;        // kg - initial air in bellows
-        double maxAirMass_ = 0.00005;     // kg - maximum capacity
+        double maxAirMass_ = 0.00002;     // kg - maximum capacity
         double p0_ = 0.0;               // Bellows pressure (Pa)
         double u0_ = 0.0;               // Flow rate (m³/s)
         double modWheelValue_ = 0.0;    // 0.0 to 1.0
         bool keyPressed_ = false;
         double baseConsumptionRate_ = 0.003;  // kg/s
-        double maxPumpingRate_ = 0.001;
+//        double maxPumpingRate_ = 0.001;
         
         // dynamic pumping state
-        double basePumpingRate = 0.0005;
-        double discretePumpAmount = 0.0002;
-        double pumpingSensitivity = 0.005;
-        double currentPumpingRate = 0.0;
-        double dynamicPressure = 0.0;
-        double basePressure = 0.0;
-        
+        double pumpAmount_ = 0.0005;  // Air added per pump action
         double previousModWheelValue_ = 0.0;
-        double pumpAmount_ = 0.002;  // Air added per pump action
         double minMovementThreshold_ = 0.01;  // Minimum movement to trigger pump
+        
+        double springConstant_ = 5000000.0; //N/m - spring stiffness
+        double restVolume_ = 0.004; // m³ bellows volume at rest (spring uncompressed)
+        double effectiveBellowsArea_ = 0.05; // m² effective area for bellows calculation
         
     public:
         Bellows(double sampleRate) : sampleRate_(sampleRate), dt_(1.0/sampleRate) {}
@@ -61,20 +58,37 @@ private:
             
             double modWheelMovement = modWheelValue_ - previousModWheelValue_;
             
+            // pumping
             if ((modWheelMovement) > minMovementThreshold_) {
                 airMass_ += pumpAmount_;
                 airMass_ = std::max(0.0, airMass_);
             }
             previousModWheelValue_ = modWheelValue_;
-            
+            // consumption
             if (keyPressed_ && airMass_ > 0.0 && activeVoices > 0) {
                 double consumptionRate = baseConsumptionRate_ * activeVoices * dt_;
                 airMass_ -= consumptionRate;
                 airMass_ = std::max(0.0, airMass_);
             }
             
-            double airDensity = airMass_ / 0.01;
-            p0_ = airDensity * 287.0 * 293.0;
+            // pressure calculation
+            double currentVolume = airMass_ / 1.225; // current air volume (ρ = 1.225 kg/m³)
+            double volumeExpansion = currentVolume - restVolume_;
+            volumeExpansion = std::max(0.0, volumeExpansion); // no negative compression
+            
+//            double airDensity = airMass_ / 0.01;
+//            p0_ = airDensity * 287.0 * 293.0;
+            
+            // gas pressure (ideal gas law)
+            double airDensity = airMass_ / currentVolume;
+            double gasPressure = airDensity * 287.0 * 293.0;
+            
+            // Spring Pressure (resists expansion)
+            double springDisplacement = volumeExpansion / effectiveBellowsArea_; // Linear displacement
+            double springForce = springConstant_ * springDisplacement;
+            double springPressure = springForce / effectiveBellowsArea_;
+            
+            p0_ = gasPressure + springPressure;
             
             
             if (keyPressed_ && airMass_ > 0.0 && p0_ > chamberPressure) {
@@ -87,39 +101,6 @@ private:
 //                DBG("No bellows flow - keyPressed=" + juce::String(keyPressed_) + ", airMass=" + juce::String(airMass_, 4));
 
             }
-        
-//            // old
-//            // Bellow pumping mechanism mod wheel adds air
-//            double pumpingIntensity = 1.0 - modWheelValue_;  // Invert the relationship
-//            if (pumpingIntensity > 0.1) {  // Only pump when mod wheel is down
-//                double pumpingRate = pumpingIntensity * maxPumpingRate_ * dt_;
-//
-//                airMass_ += pumpingRate;
-//                airMass_ = std::min(airMass_, maxAirMass_);
-//            }
-//            
-//            DBG("modWHeelValue: " + juce::String(modWheelValue_));
-//            
-//            
-//            // Air consumption when key pressed
-//            if (keyPressed_ && airMass_ > 0.0) {
-//                double consumptionRate = baseConsumptionRate_ * dt_;
-//                airMass_ -= consumptionRate;
-//                airMass_ = std::max(0.0, airMass_);
-//            }
-//            
-//            // Calculate pressure from air mass (simple ideal gas)
-//            double airDensity = airMass_ / 0.01;  // Assume 0.01 m³ bellows volume
-//            p0_ = airDensity * 287.0 * 293.0;     // P = ρRT
-//            
-//            // Calculate flow rate (simple Bernoulli)
-//            if (keyPressed_ && airMass_ > 0.0 && p0_ > chamberPressure) {
-//                double pressureDiff = p0_ - chamberPressure;
-//                double velocity = std::sqrt(2.0 * pressureDiff / 1.225);  // v = √(2ΔP/ρ)
-//                u0_ = 0.001 * velocity;  // Q = A·v (assume 0.001 m² outlet area)
-//            } else {
-//                u0_ = 0.0;
-//            }
         }
         
         void setModWheelValue(double value) {
@@ -213,10 +194,10 @@ public:
     void startNote(double frequency) {
         // if (bellows_->getAirMass() < 0.001) {
         // if (currentState_.p1 > 0.001) {
-        if (bellows_->getAirMass() < 0.0005){
-            DBG("No air in reservoir - note blocked");
-            return;
-        }
+//        if (bellows_->getAirMass() < 0.0005){
+//            DBG("No air in reservoir - note blocked");
+//            return;
+//        }
         
         Voice* selectedVoice = selectVoice();
         if (selectedVoice) {
