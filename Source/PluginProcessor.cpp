@@ -255,9 +255,9 @@ int HarmoniumPhysicsEngineAudioProcessor::getTotalOscillatingReeds() const {
     return harmonium ? harmonium->getTotalOscillatingReeds() : 0;
 }
 
-double HarmoniumPhysicsEngineAudioProcessor::getAverageReedAmplitude() const {
-    return harmonium ? harmonium->getAverageReedAmplitude() : 0.0;
-}
+//double HarmoniumPhysicsEngineAudioProcessor::getAverageReedAmplitude() const {
+//    return harmonium ? harmonium->getAverageReedAmplitude() : 0.0;
+//}
 
 // Control
 void HarmoniumPhysicsEngineAudioProcessor::handleMidiCC(int ccNumber, int ccValue) {

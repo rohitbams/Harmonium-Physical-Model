@@ -58,8 +58,8 @@ public:
     static float generateAudio(const HarmoniumPhysicsState& state, int amplitudeScale = 1000) {
         double totalFlowFundamental = state.u * amplitudeScale;
         double reedPosFundamental = state.reedPosition * amplitudeScale;
-        double richHarmonic = totalFlowFundamental + reedPosFundamental;
-        richHarmonic = std::tanh(richHarmonic * 2.5);
+//        double richHarmonic = totalFlowFundamental + reedPosFundamental;
+//        richHarmonic = std::tanh(richHarmonic * 2.5);
         
         double mixWave = (totalFlowFundamental) + (reedPosFundamental);
         mixWave = std::tanh(mixWave * 3) * 0.5;

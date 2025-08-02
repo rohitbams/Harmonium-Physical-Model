@@ -32,9 +32,9 @@ struct HarmoniumPhysicsState {
         return std::abs(reedPosition) > 1e-5 || std::abs(reedVelocity) > 1e-2;
     }
     
-    double getAmplitude() const {
-        return std::abs(reedPosition);
-    }
+    //double getAmplitude() const {
+    //    return std::abs(reedPosition);
+    //}
 };
 
 // Physics configuration - single source of truth for all constants

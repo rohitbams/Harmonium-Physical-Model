@@ -32,59 +32,94 @@ private:
         double sampleRate_;
         double dt_;
         double airMass_ = 0.003;        // kg - initial air in bellows
-        double maxAirMass_ = 0.005;     // kg - maximum capacity
+        double maxAirMass_ = 0.00005;     // kg - maximum capacity
         double p0_ = 0.0;               // Bellows pressure (Pa)
         double u0_ = 0.0;               // Flow rate (m³/s)
         double modWheelValue_ = 0.0;    // 0.0 to 1.0
         bool keyPressed_ = false;
         double baseConsumptionRate_ = 0.003;  // kg/s
-        double maxPumpingRate_ = 0.01;
+        double maxPumpingRate_ = 0.001;
         
         // dynamic pumping state
-        double basePumpingRate = 0.005;
-        double discretePumpAmount = 0.002;
-        double pumpingSensitivity = 0.05;
+        double basePumpingRate = 0.0005;
+        double discretePumpAmount = 0.0002;
+        double pumpingSensitivity = 0.005;
         double currentPumpingRate = 0.0;
         double dynamicPressure = 0.0;
         double basePressure = 0.0;
+        
+        double previousModWheelValue_ = 0.0;
+        double pumpAmount_ = 0.002;  // Air added per pump action
+        double minMovementThreshold_ = 0.01;  // Minimum movement to trigger pump
         
     public:
         Bellows(double sampleRate) : sampleRate_(sampleRate), dt_(1.0/sampleRate) {}
         
         // TODO: add realistic pumping mechanism
         // TODO: noteStart should depend on the p1 (pressure in reed chamber, not bellow chamber)
-        void updateBellows(double chamberPressure) {
-            // Bellow pumping mechanism mod wheel adds air
-            double pumpingIntensity = 1.0 - modWheelValue_;  // Invert the relationship
-            if (pumpingIntensity > 0.1) {  // Only pump when mod wheel is down
-                double pumpingRate = pumpingIntensity * maxPumpingRate_ * dt_;
-
-                airMass_ += pumpingRate;
-                airMass_ = std::min(airMass_, maxAirMass_);
+        void updateBellows(double chamberPressure, int activeVoices) {
+            
+            double modWheelMovement = modWheelValue_ - previousModWheelValue_;
+            
+            if ((modWheelMovement) > minMovementThreshold_) {
+                airMass_ += pumpAmount_;
+                airMass_ = std::max(0.0, airMass_);
             }
+            previousModWheelValue_ = modWheelValue_;
             
-            DBG("modWHeelValue: " + juce::String(modWheelValue_));
-            
-            
-            // Air consumption when key pressed
-            if (keyPressed_ && airMass_ > 0.0) {
-                double consumptionRate = baseConsumptionRate_ * dt_;
+            if (keyPressed_ && airMass_ > 0.0 && activeVoices > 0) {
+                double consumptionRate = baseConsumptionRate_ * activeVoices * dt_;
                 airMass_ -= consumptionRate;
                 airMass_ = std::max(0.0, airMass_);
             }
             
-            // Calculate pressure from air mass (simple ideal gas)
-            double airDensity = airMass_ / 0.01;  // Assume 0.01 m³ bellows volume
-            p0_ = airDensity * 287.0 * 293.0;     // P = ρRT
+            double airDensity = airMass_ / 0.01;
+            p0_ = airDensity * 287.0 * 293.0;
             
-            // Calculate flow rate (simple Bernoulli)
+            
             if (keyPressed_ && airMass_ > 0.0 && p0_ > chamberPressure) {
-                double pressureDiff = p0_ - chamberPressure;
-                double velocity = std::sqrt(2.0 * pressureDiff / 1.225);  // v = √(2ΔP/ρ)
-                u0_ = 0.001 * velocity;  // Q = A·v (assume 0.001 m² outlet area)
+                double pressureDifference = p0_ - chamberPressure;
+                double velocity = std::sqrt(2.0 * pressureDifference / 1.225);
+                u0_ = 0.001 * velocity;
+//                DBG("Bellows flow: u0=" + juce::String(u0_, 6) + ", p0=" + juce::String(p0_, 1) + ", keyPressed=" + juce::String(keyPressed_));
             } else {
                 u0_ = 0.0;
+//                DBG("No bellows flow - keyPressed=" + juce::String(keyPressed_) + ", airMass=" + juce::String(airMass_, 4));
+
             }
+        
+//            // old
+//            // Bellow pumping mechanism mod wheel adds air
+//            double pumpingIntensity = 1.0 - modWheelValue_;  // Invert the relationship
+//            if (pumpingIntensity > 0.1) {  // Only pump when mod wheel is down
+//                double pumpingRate = pumpingIntensity * maxPumpingRate_ * dt_;
+//
+//                airMass_ += pumpingRate;
+//                airMass_ = std::min(airMass_, maxAirMass_);
+//            }
+//            
+//            DBG("modWHeelValue: " + juce::String(modWheelValue_));
+//            
+//            
+//            // Air consumption when key pressed
+//            if (keyPressed_ && airMass_ > 0.0) {
+//                double consumptionRate = baseConsumptionRate_ * dt_;
+//                airMass_ -= consumptionRate;
+//                airMass_ = std::max(0.0, airMass_);
+//            }
+//            
+//            // Calculate pressure from air mass (simple ideal gas)
+//            double airDensity = airMass_ / 0.01;  // Assume 0.01 m³ bellows volume
+//            p0_ = airDensity * 287.0 * 293.0;     // P = ρRT
+//            
+//            // Calculate flow rate (simple Bernoulli)
+//            if (keyPressed_ && airMass_ > 0.0 && p0_ > chamberPressure) {
+//                double pressureDiff = p0_ - chamberPressure;
+//                double velocity = std::sqrt(2.0 * pressureDiff / 1.225);  // v = √(2ΔP/ρ)
+//                u0_ = 0.001 * velocity;  // Q = A·v (assume 0.001 m² outlet area)
+//            } else {
+//                u0_ = 0.0;
+//            }
         }
         
         void setModWheelValue(double value) {
@@ -101,7 +136,7 @@ private:
         double getRelativePressure() const { return std::min(1.0, p0_ / 1000.0); }
         
         void setMaxAirMass(double mass) {
-            maxAirMass_ = std::clamp(mass, 0.001, 0.02);
+            maxAirMass_ = std::clamp(mass, 0.1, 0.2);
             if (airMass_ > maxAirMass_) airMass_ = maxAirMass_ * 0.8;
         }
         
@@ -133,7 +168,7 @@ public:
         
         DBG("Harmonium initialized successfully");
     }
-    
+        
     // Main processing
     float processSample() {
         updateCurrentState();
@@ -151,8 +186,9 @@ public:
             avgChamberPressure /= activeCount;
         }
         
+        int activeVoices = getActiveVoiceCount();
         // Update bellows
-        bellows_->updateBellows(avgChamberPressure);
+        bellows_->updateBellows(avgChamberPressure, activeVoices);
         
         // Process all voices
         float mixedOutput = 0.0f;
@@ -176,7 +212,8 @@ public:
     // TODO: why is the new note being played when an old note is held???
     void startNote(double frequency) {
         // if (bellows_->getAirMass() < 0.001) {
-        if (currentState_.p1 > 0.001) {
+        // if (currentState_.p1 > 0.001) {
+        if (bellows_->getAirMass() < 0.0005){
             DBG("No air in reservoir - note blocked");
             return;
         }
@@ -184,6 +221,7 @@ public:
         Voice* selectedVoice = selectVoice();
         if (selectedVoice) {
             selectedVoice->startNote(frequency);
+            updateBellowsKeyState();
             bellows_->setKeyPressed(true);
             DBG("Note started: " + juce::String(frequency) + " Hz");
         }
@@ -280,19 +318,19 @@ public:
         return total;
     }
     
-    double getAverageReedAmplitude() const {
-        double totalAmplitude = 0.0;
-        int activeVoices = 0;
-        
-        for (const auto& voice : voices_) {
-            if (voice->getIsActive()) {
-                totalAmplitude += voice->getAverageAmplitude();
-                activeVoices++;
-            }
-        }
-        
-        return activeVoices > 0 ? totalAmplitude / activeVoices : 0.0;
-    }
+//    double getAverageReedAmplitude() const {
+//        double totalAmplitude = 0.0;
+//        int activeVoices = 0;
+//        
+//        for (const auto& voice : voices_) {
+//            if (voice->getIsActive()) {
+//                totalAmplitude += voice->getAverageAmplitude();
+//                activeVoices++;
+//            }
+//        }
+//        
+//        return activeVoices > 0 ? totalAmplitude / activeVoices : 0.0;
+//    }
 
 private:
     std::unique_ptr<Harmonium> harmonium;
@@ -315,6 +353,18 @@ private:
             return voices_[0].get();
         }
     }
+    
+    int getActiveVoiceCount() const {
+        int count = 0;
+        for (const auto& voice : voices_) {
+            if (voice->getIsActive()) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+
     
     void updateBellowsKeyState() {
         bool anyActive = false;
@@ -366,7 +416,7 @@ private:
         
         // Global diagnostics
         currentState_.oscillatingReeds = getTotalOscillatingReeds();
-        currentState_.averageAmplitude = getAverageReedAmplitude();
+//        currentState_.averageAmplitude = getAverageReedAmplitude();
     }
 };
 

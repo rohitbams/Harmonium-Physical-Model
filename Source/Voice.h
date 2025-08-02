@@ -189,15 +189,15 @@ public:
         return count;
     }
     
-    double getAverageAmplitude() const {
-        if (!isActive_ || reedInstances_.empty()) return 0.0;
-        
-        double totalAmplitude = 0.0;
-        for (const auto& reed : reedInstances_) {
-            totalAmplitude += reed.physicsState.getAmplitude();
-        }
-        return totalAmplitude / reedInstances_.size();
-    }
+//    double getAverageAmplitude() const {
+//        if (!isActive_ || reedInstances_.empty()) return 0.0;
+//        
+//        double totalAmplitude = 0.0;
+//        for (const auto& reed : reedInstances_) {
+//            totalAmplitude += reed.physicsState.getAmplitude();
+//        }
+//        return totalAmplitude / reedInstances_.size();
+//    }
 
 private:
     void createReedsForMode(double frequency) {
