@@ -32,18 +32,18 @@ private:
         double sampleRate_;
         double dt_;
         double airMass_ = 0.003;        // kg - initial air in bellows
-        double maxAirMass_ = 0.00002;     // kg - maximum capacity
+        double maxAirMass_ = 0.02;     // kg - maximum capacity
         double p0_ = 0.0;               // Bellows pressure (Pa)
         double u0_ = 0.0;               // Flow rate (m³/s)
         double modWheelValue_ = 0.0;    // 0.0 to 1.0
         bool keyPressed_ = false;
-        double baseConsumptionRate_ = 0.003;  // kg/s
-//        double maxPumpingRate_ = 0.001;
+        double baseConsumptionRate_ = 0.000003;  // kg/s
         
         // dynamic pumping state
-        double pumpAmount_ = 0.0005;  // Air added per pump action
+        double pumpAmount_ = 0.05;  // Air added per pump action
         double previousModWheelValue_ = 0.0;
         double minMovementThreshold_ = 0.01;  // Minimum movement to trigger pump
+        double continuousPumpingRate_ = 0.0; //Current pumping rate (kgs/s)
         
         double springConstant_ = 5000000.0; //N/m - spring stiffness
         double restVolume_ = 0.004; // m³ bellows volume at rest (spring uncompressed)
@@ -54,19 +54,33 @@ private:
         
         // TODO: add realistic pumping mechanism
         // TODO: noteStart should depend on the p1 (pressure in reed chamber, not bellow chamber)
-        void updateBellows(double chamberPressure, int activeVoices) {
+        void updateBellows(double chamberPressure, int oscillatingReeds) {
             
             double modWheelMovement = modWheelValue_ - previousModWheelValue_;
             
-            // pumping
-            if ((modWheelMovement) > minMovementThreshold_) {
-                airMass_ += pumpAmount_;
+            // discrete pumping
+//            if ((modWheelMovement) > minMovementThreshold_) {
+//                airMass_ += pumpAmount_;
+//                airMass_ = std::max(0.0, airMass_);
+//            }
+            
+            // continuous pumping
+            modWheelMovement = modWheelValue_ - previousModWheelValue_;
+            double movementSpeed = std::abs(modWheelMovement) / dt_; // movement per sample
+            continuousPumpingRate_ = movementSpeed * 0.001; // convert speed to pumping rate
+            continuousPumpingRate_ = std::min(continuousPumpingRate_, 0.01); // cap to max rate
+            
+            // apply continuous pumping
+            if (continuousPumpingRate_ > 0.001) {
+                airMass_ =+ continuousPumpingRate_ * dt_;
                 airMass_ = std::max(0.0, airMass_);
             }
+            
             previousModWheelValue_ = modWheelValue_;
+            
             // consumption
-            if (keyPressed_ && airMass_ > 0.0 && activeVoices > 0) {
-                double consumptionRate = baseConsumptionRate_ * activeVoices * dt_;
+            if (keyPressed_ && airMass_ > 0.0 && oscillatingReeds > 0) {
+                double consumptionRate = baseConsumptionRate_ * oscillatingReeds * dt_;
                 airMass_ -= consumptionRate;
                 airMass_ = std::max(0.0, airMass_);
             }
