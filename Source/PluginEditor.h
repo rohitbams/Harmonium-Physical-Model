@@ -3,6 +3,7 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 
+
 class HarmoniumPhysicsEngineAudioProcessorEditor : public juce::AudioProcessorEditor,
                                                    public juce::Slider::Listener,
                                                    public juce::MidiKeyboardStateListener,
@@ -18,6 +19,8 @@ public:
     void timerCallback() override;
 
 private:
+    
+    std::unique_ptr<juce::FileChooser> fileChooser;
     HarmoniumPhysicsEngineAudioProcessor& audioProcessor;
     
     // MIDI keyboard
@@ -33,6 +36,15 @@ private:
     
     juce::Slider airConsumptionSlider;
     juce::Label airConsumptionLabel;
+
+    juce::Slider reedChamberCapacitySlider;
+    juce::Label reedChamberCapacityLabel;
+    
+    juce::Slider narrowJetCapacitySlider;
+    juce::Label narrowJetCapacityLabel;
+
+//    juce::Slider qSlider;
+//    juce::Label qLabel;
     
     juce::Slider masterGainSlider;
     juce::Label masterGainLabel;
@@ -41,6 +53,12 @@ private:
     juce::Label reedModeLabel;
     
     juce::ToggleButton polyMonoButton;
+    
+    // IR controls
+    juce::TextButton loadIRButton;
+    juce::ToggleButton convolutionToggle;
+    juce::Label irStatusLabel;
+    juce::Label convolutionLabel;
     
     // Physics displays
     juce::Label physicsTitle;
@@ -56,6 +74,8 @@ private:
     void handleNoteOff(juce::MidiKeyboardState*, int midiChannel, int midiNoteNumber, float velocity) override;
     void sliderValueChanged(juce::Slider* slider) override;
     void comboBoxChanged(juce::ComboBox* comboBoxThatHasChanged) override;
+    void loadIRFile();
+
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(HarmoniumPhysicsEngineAudioProcessorEditor)
 };
@@ -106,6 +126,39 @@ HarmoniumPhysicsEngineAudioProcessorEditor::HarmoniumPhysicsEngineAudioProcessor
     airConsumptionLabel.attachToComponent(&airConsumptionSlider, true);
     addAndMakeVisible(airConsumptionLabel);
 
+    // reedChamber capacity control
+    reedChamberCapacitySlider.setSliderStyle(juce::Slider::LinearHorizontal);
+    reedChamberCapacitySlider.setRange(0.0, 1.0, 0.01);
+    reedChamberCapacitySlider.setValue(0.5);
+    reedChamberCapacitySlider.addListener(this);
+    addAndMakeVisible(reedChamberCapacitySlider);
+
+    reedChamberCapacityLabel.setText("reedChamber Capacity", juce::dontSendNotification);
+    reedChamberCapacityLabel.attachToComponent(&reedChamberCapacitySlider, true);
+    addAndMakeVisible(reedChamberCapacityLabel);
+    
+    // narrowJet capacity control
+    narrowJetCapacitySlider.setSliderStyle(juce::Slider::LinearHorizontal);
+    narrowJetCapacitySlider.setRange(0.0, 1.0, 0.01);
+    narrowJetCapacitySlider.setValue(0.5);
+    narrowJetCapacitySlider.addListener(this);
+    addAndMakeVisible(narrowJetCapacitySlider);
+
+    narrowJetCapacityLabel.setText("narrow jet Capacity", juce::dontSendNotification);
+    narrowJetCapacityLabel.attachToComponent(&narrowJetCapacitySlider, true);
+    addAndMakeVisible(narrowJetCapacityLabel);
+
+    // q capacity control
+//    qSlider.setSliderStyle(juce::Slider::LinearHorizontal);
+//    qSlider.setRange(0.0, 1.0, 0.01);
+//    qSlider.setValue(0.5);
+//    qSlider.addListener(this);
+//    addAndMakeVisible(qSlider);
+//
+//    qLabel.setText("Q factor", juce::dontSendNotification);
+//    qLabel.attachToComponent(&qSlider, true);
+//    addAndMakeVisible(qLabel);
+    
     // Master gain control
     masterGainSlider.setSliderStyle(juce::Slider::LinearHorizontal);
     masterGainSlider.setRange(0.0, 1.0, 0.01);
@@ -140,7 +193,7 @@ HarmoniumPhysicsEngineAudioProcessorEditor::HarmoniumPhysicsEngineAudioProcessor
     
     // Physics displays
     physicsTitle.setText("Physics Engine Diagnostics", juce::dontSendNotification);
-    physicsTitle.setFont(juce::Font(16.0f, juce::Font::bold));
+    physicsTitle.setFont(juce::FontOptions(16.0f, juce::Font::bold));
     addAndMakeVisible(physicsTitle);
     
     p0Display.setText("p0 (Bellows): -- Pa", juce::dontSendNotification);
@@ -163,6 +216,23 @@ HarmoniumPhysicsEngineAudioProcessorEditor::HarmoniumPhysicsEngineAudioProcessor
     
     modWheelDisplay.setText("MIDI Mod Wheel (CC#1): Controls bellows pumping", juce::dontSendNotification);
     addAndMakeVisible(modWheelDisplay);
+    
+    loadIRButton.setButtonText("Load IR");
+    loadIRButton.onClick = [this] { loadIRFile(); };
+    addAndMakeVisible(loadIRButton);
+
+    convolutionToggle.setButtonText("Convolution");
+    convolutionToggle.onStateChange = [this] {
+        audioProcessor.setConvolutionEnabled(convolutionToggle.getToggleState());
+    };
+    addAndMakeVisible(convolutionToggle);
+
+    irStatusLabel.setText("No IR loaded", juce::dontSendNotification);
+    addAndMakeVisible(irStatusLabel);
+
+    convolutionLabel.setText("Resonant Body:", juce::dontSendNotification);
+    addAndMakeVisible(convolutionLabel);
+
     
     // Start timer for physics display updates
     startTimer(50);  // Update 20 times per second
@@ -233,6 +303,26 @@ void HarmoniumPhysicsEngineAudioProcessorEditor::resized() {
     polyArea.removeFromLeft(labelWidth);
     polyMonoButton.setBounds(polyArea);
     
+    // Row 7: reedChamber capacity
+    auto reedChamberCapArea = controlsArea.removeFromTop(sliderHeight);
+    reedChamberCapArea.removeFromLeft(labelWidth);
+    reedChamberCapacitySlider.setBounds(reedChamberCapArea);
+    controlsArea.removeFromTop(margin);
+
+    // Row 8: narrow jet capacity
+    auto narrowJetCapArea = controlsArea.removeFromTop(sliderHeight);
+    narrowJetCapArea.removeFromLeft(labelWidth);
+    narrowJetCapacitySlider.setBounds(narrowJetCapArea);
+    controlsArea.removeFromTop(margin);
+
+//    // Row 9: q factor
+//    auto qArea = controlsArea.removeFromTop(sliderHeight);
+//    qArea.removeFromLeft(labelWidth);
+//    qSlider.setBounds(qArea);
+//    controlsArea.removeFromTop(margin);
+
+    
+
     // Physics displays section (right side)
     auto physicsArea = area.removeFromLeft(400);
     physicsArea.removeFromTop(5);
@@ -248,6 +338,16 @@ void HarmoniumPhysicsEngineAudioProcessorEditor::resized() {
     oscillatingReedsDisplay.setBounds(physicsArea.removeFromTop(20));
     physicsArea.removeFromTop(10);
     modWheelDisplay.setBounds(physicsArea.removeFromTop(40));
+    
+    // IR controls section
+    auto irArea = area.removeFromLeft(250);
+    irArea.removeFromTop(5);
+
+    convolutionLabel.setBounds(irArea.removeFromTop(20));
+    loadIRButton.setBounds(irArea.removeFromTop(30));
+    irArea.removeFromTop(5);
+    convolutionToggle.setBounds(irArea.removeFromTop(25));
+    irStatusLabel.setBounds(irArea.removeFromTop(40));
     
     // MIDI keyboard at bottom
     area.removeFromTop(20);
@@ -287,6 +387,9 @@ void HarmoniumPhysicsEngineAudioProcessorEditor::sliderValueChanged(juce::Slider
     if (slider == &amplitudeSlider) {
         audioProcessor.setAmplitudeScaling(static_cast<int>(amplitudeSlider.getValue()));
     }
+//    else if (slider == &qSlider) {
+//        audioProcessor.setQFactor(static_cast<float>(qSlider.getValue()));
+//    }
     else if (slider == &airCapacitySlider) {
         audioProcessor.setAirCapacity(static_cast<float>(airCapacitySlider.getValue()));
     }
@@ -296,6 +399,28 @@ void HarmoniumPhysicsEngineAudioProcessorEditor::sliderValueChanged(juce::Slider
     else if (slider == &masterGainSlider) {
         audioProcessor.setMasterGain(static_cast<float>(masterGainSlider.getValue()));
     }
+    else if (slider == &narrowJetCapacitySlider) {
+        audioProcessor.setNarrowJetCapacity(static_cast<float>(narrowJetCapacitySlider.getValue()));
+    }
+}
+
+void HarmoniumPhysicsEngineAudioProcessorEditor::loadIRFile() {
+    auto chooserFlags = juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectFiles;
+    
+    fileChooser = std::make_unique<juce::FileChooser>("Select IR file", juce::File(), "*.wav");
+    
+    fileChooser->launchAsync(chooserFlags, [this](const juce::FileChooser& fc) {
+        auto file = fc.getResult();
+        if (file != juce::File{}) {
+            if (audioProcessor.loadImpulseResponse(file)) {
+                irStatusLabel.setText("Loaded: " + file.getFileNameWithoutExtension(),
+                                     juce::dontSendNotification);
+                convolutionToggle.setToggleState(true, juce::sendNotification);
+            } else {
+                irStatusLabel.setText("Failed to load IR", juce::dontSendNotification);
+            }
+        }
+    });
 }
 
 void HarmoniumPhysicsEngineAudioProcessorEditor::comboBoxChanged(juce::ComboBox* comboBoxThatHasChanged) {

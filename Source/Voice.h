@@ -24,8 +24,11 @@ private:
         
         float processSample(const HarmoniumPhysicsConfig& config, double bellowsFlow, double bellowsPressure, double baseFrequency) {
             // Calculate detuned frequency
-            double detunedFreq = HarmoniumPhysicsEngine::calculateDetunedFrequency(baseFrequency, detuning_cents);
-            double omega0 = HarmoniumPhysicsEngine::calculateOmega0(detunedFreq);
+//            double detunedFreq = HarmoniumPhysicsEngine::calculateDetunedFrequency(baseFrequency, detuning_cents);
+//            double omega0 = HarmoniumPhysicsEngine::calculateOmega0(detunedFreq);
+//            double frequency = ;
+//            double omega0 = HarmoniumPhysicsEngine::calculateOmega0(detunedFreq);
+            double omega0 = HarmoniumPhysicsEngine::calculateOmega0(baseFrequency);
             
             // Update physics using the engine
             physicsState = HarmoniumPhysicsEngine::updatePhysics(
@@ -46,7 +49,7 @@ private:
     std::vector<ReedInstance> reedInstances_;
     ReedMode reedMode_;
     bool isActive_ = false;
-    double currentFrequency_ = 440.0;
+    double currentFrequency_ = 0;
 
 public:
     explicit Voice(double sampleRate) : reedMode_(SINGLE_REED) {
@@ -77,8 +80,8 @@ public:
         isActive_ = true;
         
         createReedsForMode(frequency);
-        
-        DBG("Note started: " + juce::String(frequency) + " Hz");
+        DBG("Voice startNote: " + juce::String(frequency) + " Hz, stored as: " + juce::String(currentFrequency_));
+//        DBG("Note started: " + juce::String(frequency) + " Hz");
     }
     
     void stopNote() {
@@ -110,10 +113,11 @@ public:
         }
         
         // Natural mixing for multiple reeds
-        if (reedInstances_.size() > 1) {
-            mixedOutput /= std::sqrt(reedInstances_.size());
-        }
-        
+//        if (reedInstances_.size() > 1) {
+//            mixedOutput /= std::sqrt(reedInstances_.size());
+//        }
+//        DBG("Processing with frequency: " + juce::String(currentFrequency_));
+
         return mixedOutput;
     }
     
@@ -156,14 +160,19 @@ public:
         return totalFlow;
     }
     
+    double getDampingForce() const {
+        return isActive_ && !reedInstances_.empty() ? reedInstances_[0].physicsState.dampingForce : 0.0;
+    }
+    
     // Parameter control
     void setAmplitudeScale(int amp) {
         physicsConfig_.amplitudeScaleFactor = amp;
     }
     
-    void setQFactor(double Q) {
-        physicsConfig_.Q = std::clamp(Q, 1.0, 100.0);
-    }
+//    void setQFactor(float q) {
+////        physicsConfig_.Q = std::clamp(Q, 1.0, 100.0);
+//        physicsConfig_.Q = q;
+//    }
     
     void setMu(double mu) {
         physicsConfig_.mu = std::clamp(mu, 1e-6, 1e-1);

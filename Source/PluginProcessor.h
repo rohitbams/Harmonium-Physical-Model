@@ -38,9 +38,12 @@ public:
 
     // Parameter control
     void setAmplitudeScaling(int amp);
+//    void setQFactor(float q);
     void setAirCapacity(float value);
     void setAirConsumption(float value);
     void setMasterGain(float value);
+    void setReedChamberCapacity(float value);
+    void setNarrowJetCapacity(float value);
     void setPolyphonyMode(bool polyMode);
     void setReedMode(int mode);
     int getReedMode() const;
@@ -59,6 +62,19 @@ public:
     void handleMidiCC(int ccNumber, int ccValue);
     void setModWheelValue(double value);
 
+    // IR control
+    bool loadImpulseResponse(const juce::File& irFile) {
+        return harmonium ? harmonium->loadImpulseResponse(irFile) : false;
+    }
+
+    void setConvolutionEnabled(bool enabled) {
+        if (harmonium) harmonium->setConvolutionEnabled(enabled);
+    }
+
+    bool isConvolutionEnabled() const {
+        return harmonium ? harmonium->isConvolutionEnabled() : false;
+    }
+    
 #ifndef JucePlugin_PreferredChannelConfigurations
     bool isBusesLayoutSupported(const BusesLayout& layouts) const override;
 #endif
@@ -70,6 +86,9 @@ private:
     // Parameters
     std::atomic<float> masterGain{0.7f};
     std::atomic<float> airCapacity{0.5f};
+    std::atomic<float> reedChamberCapacity{0.5f};
+    std::atomic<float> narrowJetCapacity{0.5f};
+    std::atomic<float> qFactor{0.5f};
     std::atomic<float> airConsumption{0.5f};
     std::atomic<bool> polyphonic{true};
     std::atomic<int> reedMode{1};  // Single reed by default

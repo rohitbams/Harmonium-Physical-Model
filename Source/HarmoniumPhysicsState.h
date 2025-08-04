@@ -52,7 +52,7 @@ struct HarmoniumPhysicsConfig {
     double V1 = 0.05;                   // Chamber volume (m³)
     double L2 = 0.005;                  // Jet length (m)
     double S2 = 0.0001;                 // Jet cross-section (m²)
-    double Q = 25.0;                    // Quality factor
+    double Q = 50.0;                    // Quality factor
     double mu = 5e-2;                   // Pressure-to-force coupling
     double Sr = 4e-4;                   // Reed cross-section area (m²)
     double alpha = 0.8;                 // Flow coefficient

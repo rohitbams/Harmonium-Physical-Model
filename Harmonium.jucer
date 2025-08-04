@@ -6,6 +6,8 @@
               pluginManufacturer="rb341" pluginCode="HmPE">
   <MAINGROUP id="Bocj2O" name="Harmonium">
     <GROUP id="{44AB6928-0ED5-C78F-942C-ECAB500A407F}" name="Source">
+      <FILE id="DxhRUu" name="ConvolutionProcessor.h" compile="0" resource="0"
+            file="Source/ConvolutionProcessor.h"/>
       <FILE id="qqqZuH" name="Harmonium.h" compile="0" resource="0" file="Source/Harmonium.h"/>
       <FILE id="MMWVaL" name="Voice.h" compile="0" resource="0" file="Source/Voice.h"/>
       <FILE id="TSsuwr" name="HarmoniumPhysicsEngine.h" compile="0" resource="0"
@@ -29,6 +31,7 @@
     <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_dsp" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
@@ -54,6 +57,7 @@
         <MODULEPATH id="juce_graphics" path="../../../../../../../JUCE/modules"/>
         <MODULEPATH id="juce_gui_basics" path="../../../../../../../JUCE/modules"/>
         <MODULEPATH id="juce_gui_extra" path="../../../../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_dsp" path="../../../../../../../JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
   </EXPORTFORMATS>

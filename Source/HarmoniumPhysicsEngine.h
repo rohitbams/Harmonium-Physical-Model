@@ -62,18 +62,27 @@ public:
 //        richHarmonic = std::tanh(richHarmonic * 2.5);
         
         double mixWave = (totalFlowFundamental) + (reedPosFundamental);
-        mixWave = std::tanh(mixWave * 3) * 0.5;
+//        mixWave = std::tanh(mixWave * 3) * 0.5;
+        mixWave = std::tanh((std::tanh(mixWave * 3) * 0.5) * 1.5) * 0.7;
         return static_cast<float>(mixWave);
+//        return static_cast<float>(totalFlowFundamental);
+//        return static_cast<float>(reedPosFundamental);
+        
+//        double finalOutput = std::tanh(finalOutput * 1.5) * 0.7;
+//        return static_cast<float>(finalOutput);
+
+        
     }
     
     // Utility functions
     static double calculateOmega0(double frequency) {
         return 2.0 * M_PI * frequency;
     }
-    
-    static double calculateDetunedFrequency(double baseFreq, double cents) {
-        return baseFreq * std::pow(2.0, cents / 1200.0);
-    }
+
+    // TODO: what
+//    static double calculateDetunedFrequency(double baseFreq, double cents) {
+//        return baseFreq * std::pow(2.0, cents / 1200.0);
+//    }
     
     static double getAperture(const HarmoniumPhysicsState& state, const HarmoniumPhysicsConfig& config) {
         double aperture = config.reedWidth * std::abs(state.reedPosition);

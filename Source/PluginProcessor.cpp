@@ -101,8 +101,12 @@ void HarmoniumPhysicsEngineAudioProcessor::prepareToPlay(double sampleRate, int 
     
     // Create harmonium with physics engine architecture
     harmonium = std::make_unique<Harmonium>(sampleRate);
-    midiMessageCollector.reset(sampleRate);
     
+    if (harmonium) {
+          harmonium->prepareToPlay(sampleRate, samplesPerBlock);
+      }
+      
+    midiMessageCollector.reset(sampleRate);
     DBG("Harmonium Physics Engine ready for real-time processing");
 }
 
@@ -184,6 +188,14 @@ void HarmoniumPhysicsEngineAudioProcessor::setAmplitudeScaling(int amp) {
     }
 }
 
+//void HarmoniumPhysicsEngineAudioProcessor::setQFactor(float q) {
+////    qFactor = value;
+//    if (harmonium) {
+//        harmonium->setQFactor(q);
+//        DBG("Q: " + juce::String(q));
+//    }
+//}
+
 void HarmoniumPhysicsEngineAudioProcessor::setAirCapacity(float value) {
     airCapacity = value;
     if (harmonium) {
@@ -191,6 +203,23 @@ void HarmoniumPhysicsEngineAudioProcessor::setAirCapacity(float value) {
         DBG("Air capacity: " + juce::String(value, 2));
     }
 }
+
+void HarmoniumPhysicsEngineAudioProcessor::setReedChamberCapacity(float value) {
+    reedChamberCapacity = value;
+    if (harmonium) {
+        harmonium->setReedChamberCapacity(value);
+        DBG("airCapacitySlider: " + juce::String(value, 2));
+    }
+}
+
+void HarmoniumPhysicsEngineAudioProcessor::setNarrowJetCapacity(float value) {
+    narrowJetCapacity = value;
+    if (harmonium) {
+        harmonium->setNarrowJetCapacity(value);
+        DBG("NJCapacitySlider: " + juce::String(value, 2));
+    }
+}
+
 
 void HarmoniumPhysicsEngineAudioProcessor::setAirConsumption(float value) {
     airConsumption = value;
