@@ -52,7 +52,7 @@ private:
     juce::ComboBox reedModeSelector;
     juce::Label reedModeLabel;
     
-    juce::ToggleButton polyMonoButton;
+//    juce::ToggleButton polyMonoButton;
     
     // IR controls
     juce::TextButton loadIRButton;
@@ -182,14 +182,14 @@ HarmoniumPhysicsEngineAudioProcessorEditor::HarmoniumPhysicsEngineAudioProcessor
     reedModeLabel.attachToComponent(&reedModeSelector, true);
     addAndMakeVisible(reedModeLabel);
 
-    // Polyphony toggle
-    polyMonoButton.setButtonText("Polyphonic");
-    polyMonoButton.setToggleState(true, juce::dontSendNotification);
-    polyMonoButton.onStateChange = [this] {
-        audioProcessor.setPolyphonyMode(polyMonoButton.getToggleState());
-        polyMonoButton.setButtonText(polyMonoButton.getToggleState() ? "Polyphonic" : "Monophonic");
-    };
-    addAndMakeVisible(polyMonoButton);
+//    // Polyphony toggle
+//    polyMonoButton.setButtonText("Polyphonic");
+//    polyMonoButton.setToggleState(true, juce::dontSendNotification);
+//    polyMonoButton.onStateChange = [this] {
+//        audioProcessor.setPolyphonyMode(polyMonoButton.getToggleState());
+//        polyMonoButton.setButtonText(polyMonoButton.getToggleState() ? "Polyphonic" : "Monophonic");
+//    };
+//    addAndMakeVisible(polyMonoButton);
     
     // Physics displays
     physicsTitle.setText("Physics Engine Diagnostics", juce::dontSendNotification);
@@ -298,10 +298,10 @@ void HarmoniumPhysicsEngineAudioProcessorEditor::resized() {
     reedModeSelector.setBounds(reedModeArea);
     controlsArea.removeFromTop(margin);
     
-    // Row 6: Polyphony
-    auto polyArea = controlsArea.removeFromTop(sliderHeight);
-    polyArea.removeFromLeft(labelWidth);
-    polyMonoButton.setBounds(polyArea);
+//    // Row 6: Polyphony
+//    auto polyArea = controlsArea.removeFromTop(sliderHeight);
+//    polyArea.removeFromLeft(labelWidth);
+//    polyMonoButton.setBounds(polyArea);
     
     // Row 7: reedChamber capacity
     auto reedChamberCapArea = controlsArea.removeFromTop(sliderHeight);

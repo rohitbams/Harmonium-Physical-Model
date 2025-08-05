@@ -5,20 +5,21 @@
 // Pure data structure - all Puranik-Scavone variables in one place
 struct HarmoniumPhysicsState {
     // Core physics state (Puranik-Scavone equations)
-    double p1 = 0.0;                    // Chamber pressure (Pa)
-    double p2 = 0.0;                    // Jet pressure (Pa)
-    double vj = 0.0;                    // Jet velocity (m/s)
-    double reedPosition = 0.0;          // Reed displacement ζ (m)
-    double reedVelocity = 0.0;          // Reed velocity dζ/dt (m/s)
-    double u = 0.0;                     // Total volume flow (m³/s)
-    double u_previous = 0.0;            // Previous flow for derivatives
+    double p0 = 0.0; // Bellows chamber pressure
+    double p1 = 0.0;                    // reed chamber pressure (Pa)
+    double p2 = 0.0;                    // jet pressure (Pa)
+    double vj = 0.0;                    // jet velocity (m/s)
+    double reedPosition = 0.0;          // reed displacement ζ (m)
+    double reedVelocity = 0.0;          // reed velocity dζ/dt (m/s)
+    double u = 0.0;                     // total volume flow (m³/s)
+    double u_previous = 0.0;            // previous flow for derivatives
     
     // Computed values (for diagnostics)
     double drivingForce = 0.0;          // μ(p₂ - p_atm) (N)
     double springForce = 0.0;           // ω₀²ζ (N)
     double dampingForce = 0.0;          // (ω₀/Q)(dζ/dt) (N)
     double acceleration = 0.0;          // Total acceleration (m/s²)
-    double aperture = 0.0;              // Current reed aperture (m²)
+    double aperture = 0.0;              // current reed aperture (m²)
     double netFlow = 0.0;               // u₀ - u (m³/s)
     
     // Reset to initial state
@@ -49,7 +50,7 @@ struct HarmoniumPhysicsConfig {
     double p_atm = 0.0;                 // Atmospheric pressure (Pa, gauge)
     
     // Component parameters
-    double V1 = 0.05;                   // Chamber volume (m³)
+    double V1 = 0.1;                   // Chamber volume (m³)
     double L2 = 0.005;                  // Jet length (m)
     double S2 = 0.0001;                 // Jet cross-section (m²)
     double Q = 50.0;                    // Quality factor

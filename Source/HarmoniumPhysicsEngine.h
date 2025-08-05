@@ -4,10 +4,15 @@
 #include <cmath>
 #include <algorithm>
 #include "HarmoniumPhysicsState.h"
+#include "HarmoniumPhysicsEngine.h"
+#include "Voice.h"
+#include "Harmonium.h"
 
 // Pure computational engine - all physics in one place
 class HarmoniumPhysicsEngine {
 public:
+    
+    
     // Main physics update - implements all 5 Puranik-Scavone equations
     static HarmoniumPhysicsState updatePhysics(
         const HarmoniumPhysicsState& currentState,
@@ -50,6 +55,7 @@ public:
         
         // Update flow history
         newState.u_previous = currentState.u;
+        newState.p0 = bellowsPressure;
         
         return newState;
     }
@@ -58,10 +64,11 @@ public:
     static float generateAudio(const HarmoniumPhysicsState& state, int amplitudeScale = 1000) {
         double totalFlowFundamental = state.u * amplitudeScale;
         double reedPosFundamental = state.reedPosition * amplitudeScale;
-//        double richHarmonic = totalFlowFundamental + reedPosFundamental;
-//        richHarmonic = std::tanh(richHarmonic * 2.5);
+        double harmonic2 = totalFlowFundamental * 1/2;
+        double richHarmonic = totalFlowFundamental + reedPosFundamental + harmonic2;
+        richHarmonic = std::tanh(richHarmonic * 2.5);
         
-        double mixWave = (totalFlowFundamental) + (reedPosFundamental);
+        double mixWave = (totalFlowFundamental) + (reedPosFundamental) + (richHarmonic);
 //        mixWave = std::tanh(mixWave * 3) * 0.5;
         mixWave = std::tanh((std::tanh(mixWave * 3) * 0.5) * 1.5) * 0.7;
         return static_cast<float>(mixWave);
@@ -74,12 +81,12 @@ public:
         
     }
     
-    // Utility functions
+    
     static double calculateOmega0(double frequency) {
         return 2.0 * M_PI * frequency;
     }
 
-    // TODO: what
+    // TODO: calculate detuned frequencies for realistic variation
 //    static double calculateDetunedFrequency(double baseFreq, double cents) {
 //        return baseFreq * std::pow(2.0, cents / 1200.0);
 //    }
@@ -174,8 +181,16 @@ private:
         state.netFlow = u0 - state.u;
         double denominator = config.V1 / (config.c0 * config.c0);
         double dp1_dt = (config.rho0 * state.netFlow) / denominator;
-        
-        state.p1 += dp1_dt * config.dt;
+
+//        state.p1 += dp1_dt * config.dt;
+
+        double p0 = state.p0;
+
+        if (p0 < 3500) {
+            state.p1 += dp1_dt * config.dt;
+        } else {
+            state.p1 += dp1_dt * config.dt * 5;
+        }
         
         // Natural pressure decay when no net flow
         if (std::abs(state.netFlow) < 1e-6) {
