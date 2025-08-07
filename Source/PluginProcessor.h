@@ -1,4 +1,5 @@
-// PluginProcessor.h - Complete implementation
+// PluginProcessor.h
+
 #pragma once
 #include <JuceHeader.h>
 #include "Harmonium.h"
@@ -30,15 +31,15 @@ public:
     void getStateInformation(juce::MemoryBlock& destData) override;
     void setStateInformation(const void* data, int sizeInBytes) override;
 
-    // Musical interface
+    
     void startNote(double frequency);
     void stopNote(double frequency);
     void stopAllNotes();
     bool isNoteCurrentlyOn() const;
-
-    // Parameter control
+    
+    void setLows(int value);
+    
     void setAmplitudeScaling(int amp);
-//    void setQFactor(float q);
     void setAirCapacity(float value);
     void setAirConsumption(float value);
     void setMasterGain(float value);
@@ -48,7 +49,6 @@ public:
     void setReedMode(int mode);
     int getReedMode() const;
 
-    // Physics diagnostics
     double getBellowsPressure() const;
     double getChamberPressure() const;
     double getJetPressure() const;
@@ -58,11 +58,9 @@ public:
     int getTotalOscillatingReeds() const;
     double getAverageReedAmplitude() const;
 
-    // Control
     void handleMidiCC(int ccNumber, int ccValue);
     void setModWheelValue(double value);
 
-    // IR control
     bool loadImpulseResponse(const juce::File& irFile) {
         return harmonium ? harmonium->loadImpulseResponse(irFile) : false;
     }
@@ -82,8 +80,6 @@ public:
 private:
     std::unique_ptr<Harmonium> harmonium;
     juce::MidiMessageCollector midiMessageCollector;
-    
-    // Parameters
     std::atomic<float> masterGain{0.7f};
     std::atomic<float> airCapacity{0.5f};
     std::atomic<float> reedChamberCapacity{0.5f};
@@ -91,7 +87,7 @@ private:
     std::atomic<float> qFactor{0.5f};
     std::atomic<float> airConsumption{0.5f};
     std::atomic<bool> polyphonic{true};
-    std::atomic<int> reedMode{1};  // Single reed by default
+    std::atomic<int> reedMode{1};
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(HarmoniumPhysicsEngineAudioProcessor)
 };

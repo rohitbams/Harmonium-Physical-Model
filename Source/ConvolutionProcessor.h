@@ -6,8 +6,6 @@ private:
     juce::dsp::Convolution convolution;
     juce::dsp::ProcessSpec spec;
     bool isEnabled = false;
-    
-    // Buffer for block processing
     juce::AudioBuffer<float> tempBuffer;
     
 public:
@@ -18,7 +16,7 @@ public:
         
         convolution.prepare(spec);
         
-        // Prepare temp buffer for single sample processing
+        // prepare temporary buffer for single sample processing
         tempBuffer.setSize(1, 1);
     }
     
@@ -38,7 +36,7 @@ public:
     float processSample(float inputSample) {
         if (!isEnabled) return inputSample;
         
-        // Use temp buffer for single sample
+        // use temporary buffer for single sample
         tempBuffer.setSample(0, 0, inputSample);
         
         auto block = juce::dsp::AudioBlock<float>(tempBuffer);

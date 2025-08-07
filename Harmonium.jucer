@@ -10,10 +10,9 @@
             file="Source/ConvolutionProcessor.h"/>
       <FILE id="qqqZuH" name="Harmonium.h" compile="0" resource="0" file="Source/Harmonium.h"/>
       <FILE id="MMWVaL" name="Voice.h" compile="0" resource="0" file="Source/Voice.h"/>
-      <FILE id="TSsuwr" name="HarmoniumPhysicsEngine.h" compile="0" resource="0"
-            file="Source/HarmoniumPhysicsEngine.h"/>
-      <FILE id="pApbx9" name="HarmoniumPhysicsState.h" compile="0" resource="0"
-            file="Source/HarmoniumPhysicsState.h"/>
+      <FILE id="TSsuwr" name="PhysicsEngine.h" compile="0" resource="0" file="Source/PhysicsEngine.h"/>
+      <FILE id="pApbx9" name="HarmoniumState.h" compile="0" resource="0"
+            file="Source/HarmoniumState.h"/>
       <FILE id="i0BQSq" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="R9WaAu" name="PluginProcessor.h" compile="0" resource="0"

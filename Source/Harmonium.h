@@ -10,16 +10,16 @@
 class Harmonium {
 public:
     struct PhysicsState {
-        double p0 = 0.0;                // Bellows tank pressure
-        double p1 = 0.0;                // Reed chamber pressure
-        double p2 = 0.0;                // Jet pressure
-        double u0 = 0.0;                // Bellows flow rate
-        double u = 0.0;                 // Total air volume inflow
-        double vj = 0.0;                // Jet velocity
-        double reedPosition = 0.0;      // Reed displacement
-        double reedVelocity = 0.0;      // Reed velocity
-        int oscillatingReeds = 0;       // Number of oscillating reeds
-        double averageAmplitude = 0.0;  // Average reed amplitude
+        double p0 = 0.0; // bellows tank pressure
+        double p1 = 0.0; // reed chamber pressure
+        double p2 = 0.0; // jet pressure
+        double u0 = 0.0; // bellows flow rate
+        double u = 0.0; // total air volume inflow pumping
+        double vj = 0.0; // narrow jet velocity
+        double reedPosition = 0.0; // reed displacement
+        double reedVelocity = 0.0; // reed velocity
+        int oscillatingReeds = 0; // number of oscillating reeds
+//        double averageAmplitude = 0.0; // average reed amplitude
 
     };
 
@@ -36,239 +36,87 @@ private:
     private:
         double sampleRate_;
         double dt_;
-        double airMass_ = 0.003;        // kg - initial air in bellows
-        double maxAirMass_ = 0.02;     // kg - maximum capacity
-        double reedChamberMass_ = 0;        // kg - initial air in Reed chamber
-        double maxReedChamberMass_ = 0;     // kg - maximum capacity in reed chamber
-        double narrowJetMass_ = 0;        // kg - initial air in NJ
-        double maxNarrowJetMass_ = 0;     // kg - maximum NJ capacity
-        double dampingForce = 0;     // damping force
-        double p0_ = 0.0;               // Bellows pressure (Pa)
-        double u0_ = 0.0;               // Flow rate (m³/s)
-        double modWheelValue_ = 0.0;    // 0.0 to 1.0
+        double airMass_ = 0.003; // initial air in bellows
+        double maxAirMass_ = 0.02; //  maximum capacity
+        double reedChamberMass_ = 0; // initial air in Reed chamber
+        double maxReedChamberMass_ = 0; //  maximum capacity in reed chamber
+        double narrowJetMass_ = 0; // initial air in narrow jet
+        double maxNarrowJetMass_ = 0; // maximum NJ capacity
+        double dampingForce = 0; // damping force
+        double p0_ = 0.0; // bellows pressure (Pa)
+        double u0_ = 0.0; // flow rate
+        double modWheelValue_ = 0.0;
         bool keyPressed_ = false;
-        double baseConsumptionRate_ = 0.001;  // kg/s
+        double baseConsumptionRate_ = 0.01;
         
         // dynamic pumping state
-        double pumpAmount_ = 0.05;  // Air added per pump action
+        double pumpAmount_ = 0.05; // air mass added per pumping action
         double previousModWheelValue_ = 0.0;
-        double minMovementThreshold_ = 0.01;  // Minimum movement to trigger pump
-        double continuousPumpingRate_ = 0.0; // Current pumping rate (kgs/s)
+        double minMovementThreshold_ = 0.01;  // minimum movement to trigger pump
+        double continuousPumpingRate_ = 0.0; // current pumping rate (kgs/s)
         
-        double springConstant_ = 5000000.0; //N/m - spring stiffness
-        double restVolume_ = 0.004; // m³ bellows volume at rest (spring uncompressed)
-        double effectiveBellowsArea_ = 0.05; // m² effective area for bellows calculation
+        // bellows chamber spring pressure variables
+//        double springConstant_ = 500.0; // spring stiffness
+//        double restVolume_ = 0.004; // bellows volume at rest (spring uncompressed)
+//        double effectiveBellowsArea_ = 0.05; // effective area for bellows calculation
         
     public:
         Bellows(double sampleRate) : sampleRate_(sampleRate), dt_(1.0/sampleRate) {}
         
-        // simpleset version
+
+        /*
+         * this method handles bellowing (pumping mechanism) and the air pressure p0 buildup
+         * in the bellows chameber V0, and air flow from the bellows chamber into the
+         * reed chamber V2.
+         */
         void updateBellows(double chamberPressure, int oscillatingReeds) {
             
-            // Air mass management
+            // pumping mechanism and air mass management
             double modWheelMovement = modWheelValue_ - previousModWheelValue_;
             double movementSpeed = std::abs(modWheelMovement) / dt_;
             continuousPumpingRate_ = std::min(movementSpeed * 10.0, 20.0);
             
+            // add air mass while pumping
             if (continuousPumpingRate_ > 0.001) {
                 airMass_ += continuousPumpingRate_ * dt_;
             }
             
+            // reduce air mass while pressing note keys
             if (keyPressed_ && oscillatingReeds > 0) {
                 double consumptionRate = baseConsumptionRate_ * oscillatingReeds * dt_;
                 airMass_ -= consumptionRate;
             }
             
-            airMass_ = std::clamp(airMass_, 0.0, maxAirMass_);
+            airMass_ = std::clamp(airMass_, 0.0, maxAirMass_); // limit air mass to avoid negative value division
             
-//            // SIMPLEST PRESSURE: direct proportion
-//            p0_ = (airMass_ / maxAirMass_) * 2000.0;  // 0 to 4000 Pa
-//            
-//            // Flow
-//            if (keyPressed_ && p0_ > chamberPressure) {
-//                double pressureDiff = p0_ - chamberPressure;
-//                u0_ = std::sqrt(pressureDiff) * 0.001;
-//                u0_ = std::min(u0_, 0.1);
-//            } else {
-//                u0_ = 0.0;
-//            }
             double airRatio = airMass_ / maxAirMass_;
-            p0_ = airRatio * 4000.0;  // Your current calculation
+            p0_ = airRatio * 300.0;
 
-            
             double pressureDiff = p0_ - chamberPressure;  // p0 - p1
             
-            // Always calculate flow when there's pressure difference
-            if (std::abs(pressureDiff) > 2.0) {  // Only if meaningful difference
+            // calculate flow when there's significant pressure difference
+            if (std::abs(pressureDiff) > 2.0) {
                 
                 double flowDirection = (pressureDiff > 0) ? 1.0 : -1.0;
                 double velocity = std::sqrt(std::abs(pressureDiff) / 1.225);
                 
                 if (keyPressed_) {
-                    // Keys pressed: full connection (valve fully open)
+                    // keys pressed, full connection (valve fully open)
                     u0_ = flowDirection * 0.001 * velocity;
                 } else {
-                    // Keys not pressed: restricted connection (small leak)
+                    // keys not pressed, restricted connection (small leak)
                     u0_ = flowDirection * 0.0003 * velocity;  // 30% of full flow
                 }
                 
-                u0_ = std::clamp(u0_, -0.05, 0.05);  // Safety limits
-                
+                u0_ = std::clamp(u0_, -0.05, 0.05);
             } else {
-                // Pressures are equal: no flow (equilibrium)
+                // pressures are equal, no flow
                 u0_ = 0.0;
             }
 
             
             previousModWheelValue_ = modWheelValue_;
         }
-
-
-//        void updateBellows(double chamberPressure, int oscillatingReeds) {
-//            // Mod wheel pumping - adds air
-//                double modWheelMovement = modWheelValue_ - previousModWheelValue_;
-//                double movementSpeed = std::abs(modWheelMovement) / dt_;
-//                continuousPumpingRate_ = std::min(movementSpeed * 1, 12.0);
-//                
-//                if (continuousPumpingRate_ > 0.0001) {
-//                    airMass_ += continuousPumpingRate_ * dt_;
-//                }
-//                // Air consumption - removes air
-//                if (keyPressed_ && oscillatingReeds > 0) {
-//                    double consumptionRate = baseConsumptionRate_ * oscillatingReeds * dt_;
-//                    airMass_ -= consumptionRate;
-//                }
-//                // Keep air mass in bounds
-//                airMass_ = std::clamp(airMass_, 0.0, maxAirMass_);
-//    
-//                // === PRESSURE CALCULATION ===
-//                // Simple direct relationship: more air = more pressure
-//                double airRatio = airMass_ / maxAirMass_;  // 0.0 to 1.0
-//                double basePressure = airRatio * 3500.0;  // 0 to 3500 Pa
-//                
-//                // OPTIONAL: Add spring pressure (your enhancement)
-//                double springPressure = 0.0;
-//                if (airRatio > 0.5) {  // Only when bellows is significantly filled
-//                    double compressionAmount = (airRatio - 0.5) * 2.0;  // 0.0 to 1.0
-//                    springPressure = compressionAmount * compressionAmount * 500.0;  // 0 to 500 Pa
-//                }
-//                p0_ = basePressure + springPressure;
-//                p0_ = std::clamp(p0_, 0.0, 4000.0);  // Your requested limit
-//            
-//                // === FLOW CALCULATION ===
-//                if (keyPressed_ && airMass_ > 0.001 && p0_ > chamberPressure) {
-//                    double pressureDiff = p0_ - chamberPressure;
-//                    u0_ = std::sqrt(pressureDiff) * 0.001;  // Simple flow relationship
-//                    u0_ = std::min(u0_, 0.1);
-//                } else {
-//                    u0_ = 0.0;
-//                }
-//        previousModWheelValue_ = modWheelValue_;
-//    }
-        
-//        void updateBellows(double chamberPressure, int oscillatingReeds) {
-//            // Pumping and consumption (unchanged)
-//            double modWheelMovement = modWheelValue_ - previousModWheelValue_;
-//            double movementSpeed = std::abs(modWheelMovement) / dt_;
-//            continuousPumpingRate_ = std::min(movementSpeed * 2.5, 80.0);
-//            
-//            if (continuousPumpingRate_ > 0.0001) {
-//                airMass_ += continuousPumpingRate_ * dt_;
-//            }
-//            
-//            if (keyPressed_ && oscillatingReeds > 0) {
-//                double consumptionRate = baseConsumptionRate_ * oscillatingReeds * dt_;
-//                airMass_ -= consumptionRate;
-//            }
-//            
-//            airMass_ = std::clamp(airMass_, 0.001, maxAirMass_);
-//            
-//            // === PHYSICS-BASED PRESSURE CALCULATION ===
-//            // 1. Ideal gas pressure (dominant component)
-//            const double AIR_DENSITY = 1.225;      // kg/m³
-////            const double GAS_CONSTANT = 287.0;     // J/(kg·K)
-////            const double TEMPERATURE = 293.0;      // K (20°C)
-////            
-////            double baseGasPressure = AIR_DENSITY * GAS_CONSTANT * TEMPERATURE;  // ≈103,011 Pa
-////            double airMassRatio = airMass_ / maxAirMass_;  // 0.0 to 1.0
-////            double gasPressure = baseGasPressure * airMassRatio;
-//            
-//            // 2. Spring pressure (your enhancement)
-//            double springPressure = 0.0;
-//            if (restVolume_ > 0.0 && effectiveBellowsArea_ > 1e-6) {
-//                double currentVolume = airMass_ / AIR_DENSITY;
-//                double volumeExpansion = std::max(0.0, currentVolume - restVolume_);
-//                
-//                if (volumeExpansion > 1e-6) {
-//                    double springDisplacement = volumeExpansion / effectiveBellowsArea_;
-//                    double springForce = springConstant_ * springDisplacement;
-//                    springPressure = springForce / effectiveBellowsArea_;
-//                    springPressure = std::clamp(springPressure, 0.0, 10000.0);  // Safety limit
-//                }
-//            }
-//            
-//            // 3. Combine both effects
-//            p0_ = springPressure;
-//            p0_ = std::clamp(p0_, 0.0, 200.0);  // Max ~2 atm
-//            
-//            // Flow calculation (unchanged)
-//            if (keyPressed_ && airMass_ > 0.001 && p0_ > chamberPressure) {
-//                double pressureDiff = std::max(0.0, p0_ - chamberPressure);
-//                double velocity = std::sqrt(2.0 * pressureDiff / AIR_DENSITY);
-//                u0_ = 0.001 * velocity;
-//                u0_ = std::min(u0_, 0.1);
-//            } else {
-//                u0_ = 0.0;
-//            }
-//            
-//            previousModWheelValue_ = modWheelValue_;
-//        }
-
-//        void updateBellows(double chamberPressure, int oscillatingReeds) {
-//            // modwheel pumping calculation
-//            double modWheelMovement = modWheelValue_ - previousModWheelValue_;
-//            double movementSpeed = std::abs(modWheelMovement) / dt_; // capture movement per sample
-//            continuousPumpingRate_ = std::min(movementSpeed * 2.0, 12.0);// cap to max rate
-//            
-//            if (continuousPumpingRate_ > 0.1) {
-//                airMass_ += continuousPumpingRate_ * dt_; // increase airMass_ with pumping
-//            }
-//            
-//             // air consumption
-//            if (keyPressed_ && oscillatingReeds > 0) {
-//                double consumptionRate = baseConsumptionRate_ * oscillatingReeds * dt_; // increase air consumption with more numbr of active reeds
-//                airMass_ -= consumptionRate;
-//            }
-//            
-//            airMass_ = std::clamp(airMass_, 0.001, maxAirMass_); // physical limit to never allow zero/negative value in airMass_
-//            
-//            // pressure calculation
-//            double currentVolume = airMass_ / 1.225; // current air volume (ρ = 1.225 kg/m³)
-//            double volumeExpansion = currentVolume - restVolume_;
-//            volumeExpansion = std::max(0.0, volumeExpansion); // no negative compression
-//            
-//
-//            // gas pressure (ideal gas law)
-//            double airDensity = airMass_ / currentVolume;
-//            double gasPressure = airDensity * 287.0 * 293.0;
-//            
-//            // Spring Pressure (resists expansion)
-//            double springDisplacement = volumeExpansion / effectiveBellowsArea_; // Linear displacement
-//            double springForce = springConstant_ * springDisplacement;
-//            double springPressure = springForce / effectiveBellowsArea_;
-//            
-//            p0_ = gasPressure + springPressure;
-//            p0_ = std::clamp(p0_, 0.0, gasPressure + springPressure);
-//            
-//            
-//            if (keyPressed_ && airMass_ > 0.0 && p0_ > chamberPressure) {
-//                double pressureDifference = p0_ - chamberPressure;
-//                double velocity = std::sqrt(2.0 * pressureDifference / 1.225);
-//                u0_ = 0.001 * velocity;
-//            } else {
-//                u0_ = 0.0;
-//            }
-//        }
         
         void setModWheelValue(double value) {
             modWheelValue_ = std::clamp(value, 0.0, 1.0);
@@ -317,7 +165,7 @@ private:
 
 public:
     explicit Harmonium(double sampleRate) {
-        DBG("Harmonium initializing with Physics Engine architecture...");
+//        DBG("Harmonium initialising");
         
         // create voices
         for (int i = 0; i < NUM_VOICES; ++i) {
@@ -327,7 +175,7 @@ public:
         bellows_ = std::make_unique<Bellows>(sampleRate);
         convolutionProcessor_ = std::make_unique<ConvolutionProcessor>();
         
-        DBG("Harmonium initialized successfully");
+//        DBG("Harmonium initialised successfully");
     }
         
     // main processing
@@ -362,11 +210,11 @@ public:
     bool loadImpulseResponse(const juce::File& irFile) {
         if (convolutionProcessor_) {
             bool success = convolutionProcessor_->loadIR(irFile);
-            if(success) {
-                DBG("Loaded IR: " + irFile.getFileName());
-            } else {
-                DBG("Failed to load IR: " + irFile.getFileName());
-            }
+//            if(success) {
+//                DBG("Loaded IR: " + irFile.getFileName());
+//            } else {
+//                DBG("Failed to load IR: " + irFile.getFileName());
+//            }
             return success;
         }
         return false;
@@ -375,7 +223,7 @@ public:
     void setConvolutionEnabled(bool enabled) {
         if (convolutionProcessor_) {
             convolutionProcessor_->setEnabled(enabled);
-            DBG("Convolution " + juce::String(enabled ? "enabled" : "disables"));
+//            DBG("Convolution " + juce::String(enabled ? "enabled" : "disables"));
         }
     }
     
@@ -383,7 +231,7 @@ public:
         return convolutionProcessor_ ? convolutionProcessor_->getEnabled() : false;
     }
     
-    // TODO: why is the new note being played when an old note is held???
+    // TODO: fix new note being played when an old note is held
     void startNote(double frequency) {
         
         Voice* selectedVoice = selectVoice();
@@ -391,7 +239,7 @@ public:
             selectedVoice->startNote(frequency);
             updateBellowsKeyState();
             bellows_->setKeyPressed(true);
-            DBG("Note started: " + juce::String(frequency) + " Hz");
+//            DBG("Note started: " + juce::String(frequency) + " Hz");
         }
     }
     
@@ -403,7 +251,7 @@ public:
             }
         }
         updateBellowsKeyState();
-        DBG("Note stopped: " + juce::String(frequency) + " Hz");
+//        DBG("Note stopped: " + juce::String(frequency) + " Hz");
     }
     
     void stopAllNotes() {
@@ -411,7 +259,7 @@ public:
             voice->stopNote();
         }
         bellows_->setKeyPressed(false);
-        DBG("All notes stopped");
+//        DBG("All notes stopped");
     }
     
     void setModWheelValue(double value) {
@@ -457,13 +305,13 @@ public:
         DBG("Polyphony: " + juce::String(polyphonic ? "ON" : "OFF"));
     }
     
-    // reedMode config
+    // reed mode
     void setReedMode(Voice::ReedMode mode) {
         for (auto& voice : voices_) {
             voice->setReedMode(mode);
         }
-        DBG("Reed mode: " + juce::String(mode == Voice::SINGLE_REED ? "Single" :
-                                       mode == Voice::DOUBLE_REED ? "Double" : "Triple"));
+//        DBG("Reed mode: " + juce::String(mode == Voice::SINGLE_REED ? "Single" :
+//                                       mode == Voice::DOUBLE_REED ? "Double" : "Triple"));
     }
     
     Voice::ReedMode getReedMode() const {
@@ -475,6 +323,13 @@ public:
             voice->setAmplitudeScale(amp);
         }
         DBG("Amplitude scale: " + juce::String(amp));
+    }
+
+    void setLows(int value) {
+        for (auto& voice : voices_) {
+            voice->setLows(value);
+        }
+        DBG("Lows: " + juce::String(value));
     }
 
 
@@ -547,7 +402,7 @@ private:
             bellows_->setKeyPressed(false);
         }
     }
-    
+        
     void updateCurrentState() {
         // find first active voice for diagnostics
         Voice* activeVoice = nullptr;
@@ -586,135 +441,3 @@ private:
         currentState_.oscillatingReeds = getTotalOscillatingReeds();
     }
 };
-
-
-
-/*
- * my updateBellows() copy for reference
- *
- */
-
-// // TODO: add realistic pumping mechanism
-// // TODO: noteStart should depend on the p1 (pressure in reed chamber, not bellow chamber)
-// void updateBellows(double chamberPressure, int oscillatingReeds) {
-//     
-//     double modWheelMovement = modWheelValue_ - previousModWheelValue_;
-//     // continuous pumping
-//     double movementSpeed = std::abs(modWheelMovement) / dt_; // movement per sample
-////            continuousPumpingRate_ = std::min(movementSpeed * 0.1, 1.1); // cap to max rate
-//     continuousPumpingRate_ = std::min(movementSpeed * 2.5, 80.0);
-//     
-//     // apply continuous pumping
-////            if (continuousPumpingRate_ > 0.0001) {
-//////                         if (continuousPumpingRate_ > baseConsumptionRate_) {
-////                airMass_ += continuousPumpingRate_ * dt_; // air mass increasing per sample
-////                airMass_ = std::max(0.1, airMass_);
-////            }
-//     
-//     if (continuousPumpingRate_ > 0.0001) {
-//         airMass_ += continuousPumpingRate_ * dt_; // air mass increasing per sample
-//     }
-//     
-////            previousModWheelValue_ = modWheelValue_;
-//     
-//      // 2. SAFE AIR CONSUMPTION
-//     if (keyPressed_ && oscillatingReeds > 0) {
-//         double consumptionRate = baseConsumptionRate_ * oscillatingReeds * dt_;
-//         airMass_ -= consumptionRate * 2;
-//     }
-//     
-//     // 3. ENFORCE PHYSICAL LIMITS (CRITICAL!)
-//     airMass_ = std::clamp(airMass_, 0.001, maxAirMass_); // Never allow zero/negative
-//     
-//     // consumption
-//     if (keyPressed_ && airMass_ > 0.0 && oscillatingReeds > 0) {
-//         double consumptionRate = baseConsumptionRate_ * oscillatingReeds * dt_;
-//         airMass_ -= consumptionRate;
-//         airMass_ = std::max(0.1, airMass_);
-//     }
-//     
-//     // pressure calculation
-//     double currentVolume = airMass_ / 1.225; // current air volume (ρ = 1.225 kg/m³)
-//     double volumeExpansion = currentVolume - restVolume_;
-//     volumeExpansion = std::max(0.0, volumeExpansion); // no negative compression
-//     
-////            double airDensity = airMass_ / 0.01;
-////            p0_ = airDensity * 287.0 * 293.0;
-//     
-//     // gas pressure (ideal gas law)
-//     double airDensity = airMass_ / currentVolume;
-//     double gasPressure = airDensity * 287.0 * 293.0;
-//     
-//     // Spring Pressure (resists expansion)
-//     double springDisplacement = volumeExpansion / effectiveBellowsArea_; // Linear displacement
-//     double springForce = springConstant_ * springDisplacement;
-//     double springPressure = springForce / effectiveBellowsArea_;
-//     
-//     p0_ = gasPressure + springPressure /** 10*/;
-//     p0_ = std::clamp(p0_, 0.0, gasPressure + springPressure /** 10*/);
-////                DBG("p0_ value: " + juce::String(p0_));
-//     
-//     
-//     if (keyPressed_ && airMass_ > 0.0 && p0_ > chamberPressure) {
-//         double pressureDifference = p0_ - chamberPressure;
-//         double velocity = std::sqrt(2.0 * pressureDifference / 1.225);
-//         u0_ = 0.001 * velocity;
-////                DBG("Bellows flow: u0=" + juce::String(u0_, 6) + ", p0=" + juce::String(p0_, 1) + ", keyPressed=" + juce::String(keyPressed_));
-//     } else {
-//         u0_ = 0.0;
-////                DBG("No bellows flow - keyPressed=" + juce::String(keyPressed_) + ", airMass=" + juce::String(airMass_, 4));
-//
-//     }
-// }
-//
-
-
-//        new
-//        void updateBellows(double chamberPressure, int oscillatingReeds) {
-//            // 1. SAFE MODWHEEL PUMPING
-//            double modWheelMovement = modWheelValue_ - previousModWheelValue_;
-//            double movementSpeed = std::abs(modWheelMovement) / dt_;
-//            continuousPumpingRate_ = std::min(movementSpeed * 2.5, 80.0); // Cap pumping rate
-//
-//            if (continuousPumpingRate_ > 0.0001) {
-//                airMass_ += continuousPumpingRate_ * dt_;
-//            }
-//
-//            // 2. SAFE AIR CONSUMPTION
-//            if (keyPressed_ && oscillatingReeds > 0) {
-//                double consumptionRate = baseConsumptionRate_ * oscillatingReeds * dt_;
-//                airMass_ -= consumptionRate * 2;
-//            }
-//
-//            // 3. ENFORCE PHYSICAL LIMITS (CRITICAL!)
-//            airMass_ = std::clamp(airMass_, 0.001, maxAirMass_); // Never allow zero/negative
-//
-//            // 5. SIMPLIFIED PRESSURE MODEL (Avoid complex spring physics for now)
-//            // Use direct pressure relationship instead of complex spring model
-//            double basePressure = (airMass_ / maxAirMass_) * 3000.0; // Scale to reasonable pressure
-//
-//            // 6. PRESSURE ENHANCEMENT FROM PUMPING
-//            double pumpingBoost = continuousPumpingRate_ * 500.0; // Immediate pressure from pumping
-//
-//            p0_ = basePressure + pumpingBoost;
-//            p0_ = std::clamp(p0_, 0.0, 8000.0); // Physical limits
-//
-//            // 7. SAFE FLOW CALCULATION
-//            if (keyPressed_ && airMass_ > 0.001 && p0_ > chamberPressure) {
-//                double pressureDifference = std::max(0.0, p0_ - chamberPressure);
-//                double velocity = std::sqrt(2.0 * pressureDifference / 1.225);
-//                u0_ = std::min(0.001 * velocity, 0.1); // Cap flow rate
-//            } else {
-//                u0_ = 0.0;
-//            }
-//
-//            // 8. UPDATE HISTORY
-//            previousModWheelValue_ = modWheelValue_;
-//
-//            // 9. DEBUG OUTPUT (temporary)
-//            if (std::isnan(p0_) || std::isinf(p0_)) {
-//                DBG("ERROR: p0 is NaN/Inf! airMass=" + juce::String(airMass_) +
-//                    ", basePressure=" + juce::String(basePressure));
-//                p0_ = 100.0; // Emergency fallback
-//            }
-//        }

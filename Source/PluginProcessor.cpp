@@ -180,7 +180,6 @@ bool HarmoniumPhysicsEngineAudioProcessor::isNoteCurrentlyOn() const {
     return harmonium && harmonium->isNoteActive();
 }
 
-// Parameter control
 void HarmoniumPhysicsEngineAudioProcessor::setAmplitudeScaling(int amp) {
     if (harmonium) {
         harmonium->setAmplitudeScale(amp);
@@ -188,13 +187,15 @@ void HarmoniumPhysicsEngineAudioProcessor::setAmplitudeScaling(int amp) {
     }
 }
 
-//void HarmoniumPhysicsEngineAudioProcessor::setQFactor(float q) {
-////    qFactor = value;
-//    if (harmonium) {
-//        harmonium->setQFactor(q);
-//        DBG("Q: " + juce::String(q));
-//    }
-//}
+
+// EQ
+void HarmoniumPhysicsEngineAudioProcessor::setLows(int value) {
+    if (harmonium) {
+        harmonium->setLows(value);
+        DBG("lows: " + juce::String(value));
+    }
+}
+
 
 void HarmoniumPhysicsEngineAudioProcessor::setAirCapacity(float value) {
     airCapacity = value;

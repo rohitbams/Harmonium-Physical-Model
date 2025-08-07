@@ -1,9 +1,9 @@
-// Voice.h - Complete physics engine implementation
+// Voice.h
 #pragma once
 #include <JuceHeader.h>
 #include <vector>
-#include "HarmoniumPhysicsState.h"
-#include "HarmoniumPhysicsEngine.h"
+#include "HarmoniumState.h"
+#include "PhysicsEngine.h"
 
 class Voice {
 public:
@@ -15,7 +15,8 @@ public:
 
 private:
     struct ReedInstance {
-        HarmoniumPhysicsState physicsState;
+        HarmoniumState physicsState;
+        HarmoniumPhysicsConfig config;
         double detuning_cents;
         
         ReedInstance(double detune_cents = 0.0) : detuning_cents(detune_cents) {
@@ -23,15 +24,13 @@ private:
         }
         
         float processSample(const HarmoniumPhysicsConfig& config, double bellowsFlow, double bellowsPressure, double baseFrequency) {
-            // Calculate detuned frequency
-//            double detunedFreq = HarmoniumPhysicsEngine::calculateDetunedFrequency(baseFrequency, detuning_cents);
-//            double omega0 = HarmoniumPhysicsEngine::calculateOmega0(detunedFreq);
-//            double frequency = ;
-//            double omega0 = HarmoniumPhysicsEngine::calculateOmega0(detunedFreq);
-            double omega0 = HarmoniumPhysicsEngine::calculateOmega0(baseFrequency);
+            // TODO: calculate detuned pitches
+            double detunedFreq = PhysicsEngine::calculateDetunedFrequency(baseFrequency, detuning_cents);
+            double omega0 = PhysicsEngine::calculateOmega0(detunedFreq);
+//            double frequency = currentFrequency_;
+//            double omega0 = PhysicsEngine::calculateOmega0(baseFrequency);
             
-            // Update physics using the engine
-            physicsState = HarmoniumPhysicsEngine::updatePhysics(
+            physicsState = PhysicsEngine::updatePhysics(
                 physicsState,
                 config,
                 bellowsFlow,
@@ -39,12 +38,11 @@ private:
                 omega0
             );
             
-            // Generate audio from updated state
-            return HarmoniumPhysicsEngine::generateAudio(physicsState, config.amplitudeScaleFactor);
+            
+            return PhysicsEngine::generateAudio(physicsState, config);
         }
     };
 
-    // Configuration and state
     HarmoniumPhysicsConfig physicsConfig_;
     std::vector<ReedInstance> reedInstances_;
     ReedMode reedMode_;
@@ -55,10 +53,7 @@ public:
     explicit Voice(double sampleRate) : reedMode_(SINGLE_REED) {
         physicsConfig_.sampleRate = sampleRate;
         physicsConfig_.dt = 1.0 / sampleRate;
-        
-        // Start with single reed
-        reedInstances_.emplace_back(0.0);  // No detuning
-        
+        reedInstances_.emplace_back(0.0);
         DBG("Voice initialized with Physics Engine");
     }
     
@@ -81,13 +76,12 @@ public:
         
         createReedsForMode(frequency);
         DBG("Voice startNote: " + juce::String(frequency) + " Hz, stored as: " + juce::String(currentFrequency_));
-//        DBG("Note started: " + juce::String(frequency) + " Hz");
     }
     
     void stopNote() {
         isActive_ = false;
         
-        // Reset all reed states
+        // reset all reed
         for (auto& reed : reedInstances_) {
             reed.physicsState.reset();
         }
@@ -101,7 +95,7 @@ public:
         float mixedOutput = 0.0f;
         double airflowPerReed = bellowsFlowRate / reedInstances_.size();
         
-        // Process each reed using physics engine
+        // process each reed
         for (auto& reedInstance : reedInstances_) {
             float reedOutput = reedInstance.processSample(
                 physicsConfig_,
@@ -121,7 +115,6 @@ public:
         return mixedOutput;
     }
     
-    // Getters
     bool isAvailable() const { return !isActive_; }
     bool getIsActive() const { return isActive_; }
     bool matchesFrequency(double freq) const {
@@ -130,7 +123,6 @@ public:
     double getCurrentFrequency() const { return currentFrequency_; }
     ReedMode getReedMode() const { return reedMode_; }
     
-    // Physics state access (use first reed as representative)
     double getChamberPressure() const {
         return isActive_ && !reedInstances_.empty() ? reedInstances_[0].physicsState.p1 : 0.0;
     }
@@ -164,21 +156,18 @@ public:
         return isActive_ && !reedInstances_.empty() ? reedInstances_[0].physicsState.dampingForce : 0.0;
     }
     
-    // Parameter control
     void setAmplitudeScale(int amp) {
-        physicsConfig_.amplitudeScaleFactor = amp;
+        physicsConfig_.amplitudeScale = amp;
     }
-    
-//    void setQFactor(float q) {
-////        physicsConfig_.Q = std::clamp(Q, 1.0, 100.0);
-//        physicsConfig_.Q = q;
-//    }
+
+    void setLows(int value) {
+        physicsConfig_.low = value;
+    }
     
     void setMu(double mu) {
         physicsConfig_.mu = std::clamp(mu, 1e-6, 1e-1);
     }
     
-    // Diagnostics
     bool isOscillating() const {
         for (const auto& reed : reedInstances_) {
             if (reed.physicsState.isOscillating()) {
@@ -214,18 +203,18 @@ private:
         
         switch (reedMode_) {
             case SINGLE_REED:
-                reedInstances_.emplace_back(0.0);    // No detuning
+                reedInstances_.emplace_back(0.0); // No detuning
                 break;
                 
             case DOUBLE_REED:
-                reedInstances_.emplace_back(0.0);    // Fundamental
-                reedInstances_.emplace_back(-12.0);  // One octave lower
+                reedInstances_.emplace_back(0.0); // Fundamental
+                reedInstances_.emplace_back(-12.0); // One octave lower
                 break;
                     
             case TRIPLE_REED:
-                reedInstances_.emplace_back(-12.5);  // Slightly flat octave
-                reedInstances_.emplace_back(0.0);    // Fundamental
-                reedInstances_.emplace_back(+12.2);  // Slightly sharp octave
+                reedInstances_.emplace_back(-12.5); // Slightly flat octave
+                reedInstances_.emplace_back(0.0); // Fundamental
+                reedInstances_.emplace_back(+12.2); // Slightly sharp octave
                 break;
         }
         

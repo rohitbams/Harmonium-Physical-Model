@@ -1,4 +1,4 @@
-// PluginEditor.h - Complete implementation
+// PluginEditor.h
 #pragma once
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
@@ -23,13 +23,22 @@ private:
     std::unique_ptr<juce::FileChooser> fileChooser;
     HarmoniumPhysicsEngineAudioProcessor& audioProcessor;
     
-    // MIDI keyboard
-    juce::MidiKeyboardState keyboardState;
-    juce::MidiKeyboardComponent keyboardComponent;
+//    juce::MidiKeyboardState keyboardState;
+//    juce::MidiKeyboardComponent keyboardComponent;
     
-    // Controls
     juce::Slider amplitudeSlider;
     juce::Label amplitudeLabel;
+    
+    juce::Slider lowSlider;
+    juce::Label lowLabel;
+    juce::Slider lowMidSlider;
+    juce::Label lowMidLabel;
+    juce::Slider midSlider;
+    juce::Label midLabel;
+    juce::Slider highMidSlider;
+    juce::Label highMidLabel;
+    juce::Slider highSlider;
+    juce::Label highLabel;
     
     juce::Slider airCapacitySlider;
     juce::Label airCapacityLabel;
@@ -54,13 +63,11 @@ private:
     
 //    juce::ToggleButton polyMonoButton;
     
-    // IR controls
     juce::TextButton loadIRButton;
     juce::ToggleButton convolutionToggle;
     juce::Label irStatusLabel;
     juce::Label convolutionLabel;
     
-    // Physics displays
     juce::Label physicsTitle;
     juce::Label p0Display;
     juce::Label p1Display;
@@ -80,18 +87,19 @@ private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(HarmoniumPhysicsEngineAudioProcessorEditor)
 };
 
-// PluginEditor.cpp - Complete implementation
+// PluginEditor.cpp
+
 #include "PluginEditor.h"
 
 HarmoniumPhysicsEngineAudioProcessorEditor::HarmoniumPhysicsEngineAudioProcessorEditor(HarmoniumPhysicsEngineAudioProcessor& p)
-    : AudioProcessorEditor(&p), audioProcessor(p),
-      keyboardComponent(keyboardState, juce::MidiKeyboardComponent::horizontalKeyboard)
+    : AudioProcessorEditor(&p), audioProcessor(p)
+//      keyboardComponent(keyboardState, juce::MidiKeyboardComponent::horizontalKeyboard)
 {
-    // MIDI keyboard
-    keyboardState.addListener(this);
-    addAndMakeVisible(keyboardComponent);
-    keyboardComponent.setMidiChannel(1);
-    keyboardComponent.setKeyWidth(20.0f);
+//    // MIDI keyboard
+//    keyboardState.addListener(this);
+//    addAndMakeVisible(keyboardComponent);
+//    keyboardComponent.setMidiChannel(1);
+//    keyboardComponent.setKeyWidth(20.0f);
     
     // Amplitude control
     amplitudeSlider.setRange(100, 3000);
@@ -103,6 +111,19 @@ HarmoniumPhysicsEngineAudioProcessorEditor::HarmoniumPhysicsEngineAudioProcessor
     amplitudeLabel.setText("Amplitude Scale", juce::dontSendNotification);
     amplitudeLabel.attachToComponent(&amplitudeSlider, true);
     addAndMakeVisible(amplitudeLabel);
+
+
+    // EQ control
+    //low
+    lowSlider.setRange(100, 1000);
+    lowSlider.setValue(500);
+    lowSlider.setTextBoxStyle(juce::Slider::TextBoxRight, false, 60, 20);
+    lowSlider.addListener(this);
+    addAndMakeVisible(lowSlider);
+    
+    lowLabel.setText("Lows", juce::dontSendNotification);
+    lowLabel.attachToComponent(&lowSlider, true);
+    addAndMakeVisible(lowLabel);
     
     // Air capacity control
     airCapacitySlider.setSliderStyle(juce::Slider::LinearHorizontal);
@@ -111,7 +132,7 @@ HarmoniumPhysicsEngineAudioProcessorEditor::HarmoniumPhysicsEngineAudioProcessor
     airCapacitySlider.addListener(this);
     addAndMakeVisible(airCapacitySlider);
 
-    airCapacityLabel.setText("Air Capacity", juce::dontSendNotification);
+    airCapacityLabel.setText("Bellows Air Capacity", juce::dontSendNotification);
     airCapacityLabel.attachToComponent(&airCapacitySlider, true);
     addAndMakeVisible(airCapacityLabel);
 
@@ -122,7 +143,7 @@ HarmoniumPhysicsEngineAudioProcessorEditor::HarmoniumPhysicsEngineAudioProcessor
     airConsumptionSlider.addListener(this);
     addAndMakeVisible(airConsumptionSlider);
 
-    airConsumptionLabel.setText("Air Consumption", juce::dontSendNotification);
+    airConsumptionLabel.setText("Bellows Air Consumption", juce::dontSendNotification);
     airConsumptionLabel.attachToComponent(&airConsumptionSlider, true);
     addAndMakeVisible(airConsumptionLabel);
 
@@ -133,7 +154,7 @@ HarmoniumPhysicsEngineAudioProcessorEditor::HarmoniumPhysicsEngineAudioProcessor
     reedChamberCapacitySlider.addListener(this);
     addAndMakeVisible(reedChamberCapacitySlider);
 
-    reedChamberCapacityLabel.setText("reedChamber Capacity", juce::dontSendNotification);
+    reedChamberCapacityLabel.setText("Reed Chamber Capacity", juce::dontSendNotification);
     reedChamberCapacityLabel.attachToComponent(&reedChamberCapacitySlider, true);
     addAndMakeVisible(reedChamberCapacityLabel);
     
@@ -144,11 +165,11 @@ HarmoniumPhysicsEngineAudioProcessorEditor::HarmoniumPhysicsEngineAudioProcessor
     narrowJetCapacitySlider.addListener(this);
     addAndMakeVisible(narrowJetCapacitySlider);
 
-    narrowJetCapacityLabel.setText("narrow jet Capacity", juce::dontSendNotification);
+    narrowJetCapacityLabel.setText("Narrow Jet Capacity", juce::dontSendNotification);
     narrowJetCapacityLabel.attachToComponent(&narrowJetCapacitySlider, true);
     addAndMakeVisible(narrowJetCapacityLabel);
 
-    // q capacity control
+    // q control
 //    qSlider.setSliderStyle(juce::Slider::LinearHorizontal);
 //    qSlider.setRange(0.0, 1.0, 0.01);
 //    qSlider.setValue(0.5);
@@ -162,7 +183,7 @@ HarmoniumPhysicsEngineAudioProcessorEditor::HarmoniumPhysicsEngineAudioProcessor
     // Master gain control
     masterGainSlider.setSliderStyle(juce::Slider::LinearHorizontal);
     masterGainSlider.setRange(0.0, 1.0, 0.01);
-    masterGainSlider.setValue(0.7);
+    masterGainSlider.setValue(0.3);
     masterGainSlider.addListener(this);
     addAndMakeVisible(masterGainSlider);
 
@@ -192,7 +213,7 @@ HarmoniumPhysicsEngineAudioProcessorEditor::HarmoniumPhysicsEngineAudioProcessor
 //    addAndMakeVisible(polyMonoButton);
     
     // Physics displays
-    physicsTitle.setText("Physics Engine Diagnostics", juce::dontSendNotification);
+//    physicsTitle.setText("Physics Engine Diagnostics", juce::dontSendNotification);
     physicsTitle.setFont(juce::FontOptions(16.0f, juce::Font::bold));
     addAndMakeVisible(physicsTitle);
     
@@ -214,8 +235,8 @@ HarmoniumPhysicsEngineAudioProcessorEditor::HarmoniumPhysicsEngineAudioProcessor
     oscillatingReedsDisplay.setText("Oscillating Reeds: 0", juce::dontSendNotification);
     addAndMakeVisible(oscillatingReedsDisplay);
     
-    modWheelDisplay.setText("MIDI Mod Wheel (CC#1): Controls bellows pumping", juce::dontSendNotification);
-    addAndMakeVisible(modWheelDisplay);
+//    modWheelDisplay.setText("MIDI Mod Wheel (CC#1): Controls bellows pumping", juce::dontSendNotification);
+//    addAndMakeVisible(modWheelDisplay);
     
     loadIRButton.setButtonText("Load IR");
     loadIRButton.onClick = [this] { loadIRFile(); };
@@ -234,16 +255,14 @@ HarmoniumPhysicsEngineAudioProcessorEditor::HarmoniumPhysicsEngineAudioProcessor
     addAndMakeVisible(convolutionLabel);
 
     
-    // Start timer for physics display updates
-    startTimer(50);  // Update 20 times per second
+    startTimer(50);
     
     setSize(900, 500);
     
-    DBG("Physics Engine GUI initialized");
 }
 
 HarmoniumPhysicsEngineAudioProcessorEditor::~HarmoniumPhysicsEngineAudioProcessorEditor() {
-    keyboardState.removeListener(this);
+//    keyboardState.removeListener(this);
 }
 
 void HarmoniumPhysicsEngineAudioProcessorEditor::paint(juce::Graphics& g) {
@@ -251,14 +270,14 @@ void HarmoniumPhysicsEngineAudioProcessorEditor::paint(juce::Graphics& g) {
     
     g.setColour(juce::Colours::white);
     g.setFont(20.0f);
-    g.drawFittedText("Harmonium Physics Engine",
+    g.drawFittedText("Harmonium",
                      getLocalBounds().removeFromTop(30),
                      juce::Justification::centred, 1);
 }
 
 void HarmoniumPhysicsEngineAudioProcessorEditor::resized() {
     auto area = getLocalBounds();
-    area.removeFromTop(35);  // Title space
+    area.removeFromTop(35);
     
     const int sliderHeight = 30;
     const int labelWidth = 140;
@@ -294,6 +313,7 @@ void HarmoniumPhysicsEngineAudioProcessorEditor::resized() {
     
     // Row 5: Reed mode
     auto reedModeArea = controlsArea.removeFromTop(sliderHeight);
+    reedModeArea.removeFromRight(labelWidth);
     reedModeArea.removeFromLeft(labelWidth);
     reedModeSelector.setBounds(reedModeArea);
     controlsArea.removeFromTop(margin);
@@ -320,10 +340,15 @@ void HarmoniumPhysicsEngineAudioProcessorEditor::resized() {
 //    qArea.removeFromLeft(labelWidth);
 //    qSlider.setBounds(qArea);
 //    controlsArea.removeFromTop(margin);
+    
+    // Row 9: EQ
+    auto lowArea = controlsArea.removeFromTop(sliderHeight);
+    lowArea.removeFromLeft(labelWidth);
+    lowSlider.setBounds(lowArea);
+    controlsArea.removeFromTop(margin);
 
     
-
-    // Physics displays section (right side)
+    // display section (right side)
     auto physicsArea = area.removeFromLeft(400);
     physicsArea.removeFromTop(5);
     
@@ -339,7 +364,6 @@ void HarmoniumPhysicsEngineAudioProcessorEditor::resized() {
     physicsArea.removeFromTop(10);
     modWheelDisplay.setBounds(physicsArea.removeFromTop(40));
     
-    // IR controls section
     auto irArea = area.removeFromLeft(250);
     irArea.removeFromTop(5);
 
@@ -349,23 +373,28 @@ void HarmoniumPhysicsEngineAudioProcessorEditor::resized() {
     convolutionToggle.setBounds(irArea.removeFromTop(25));
     irStatusLabel.setBounds(irArea.removeFromTop(40));
     
-    // MIDI keyboard at bottom
-    area.removeFromTop(20);
-    keyboardComponent.setBounds(area.removeFromBottom(80));
+//    // MIDI keyboard at bottom
+//    area.removeFromTop(20);
+//    keyboardComponent.setBounds(area.removeFromBottom(80));
 }
 
 void HarmoniumPhysicsEngineAudioProcessorEditor::timerCallback() {
-    // Update physics displays
+    // get physics values
     double p0 = audioProcessor.getBellowsPressure();
     double p1 = audioProcessor.getChamberPressure();
     double p2 = audioProcessor.getJetPressure();
     double reedPosition = audioProcessor.getReedPosition();
     double reedVelocity = audioProcessor.getReedVelocity();
     int oscillatingReeds = audioProcessor.getTotalOscillatingReeds();
+//    double low = audioProcessor.getLows();
+//    double lowMids = audioProcessor.getLowMids();
+//    double mids = audioProcessor.getMids();
+//    double highMids = audioProcessor.getHighMids();
+//    double highs = audioProcessor.getHighs();
 
     p0Display.setText("p0 (Bellows): " + juce::String(p0, 1) + " Pa", juce::dontSendNotification);
     p1Display.setText("p1 (Chamber): " + juce::String(p1, 1) + " Pa", juce::dontSendNotification);
-    p2Display.setText("p2 (Jet): " + juce::String(p2, 1) + " Pa", juce::dontSendNotification);
+    p2Display.setText("p2 (Narrow jet): " + juce::String(p2, 1) + " Pa", juce::dontSendNotification);
     reedPositionDisplay.setText("Reed Position: " + juce::String(reedPosition, 6) + " m", juce::dontSendNotification);
     reedVelocityDisplay.setText("Reed Velocity: " + juce::String(reedVelocity, 3) + " m/s", juce::dontSendNotification);
     oscillatingReedsDisplay.setText("Oscillating Reeds: " + juce::String(oscillatingReeds), juce::dontSendNotification);
@@ -386,6 +415,9 @@ void HarmoniumPhysicsEngineAudioProcessorEditor::handleNoteOff(juce::MidiKeyboar
 void HarmoniumPhysicsEngineAudioProcessorEditor::sliderValueChanged(juce::Slider* slider) {
     if (slider == &amplitudeSlider) {
         audioProcessor.setAmplitudeScaling(static_cast<int>(amplitudeSlider.getValue()));
+    }
+    if (slider == &lowSlider) {
+        audioProcessor.setLows(static_cast<int>(lowSlider.getValue()));
     }
 //    else if (slider == &qSlider) {
 //        audioProcessor.setQFactor(static_cast<float>(qSlider.getValue()));
@@ -427,6 +459,6 @@ void HarmoniumPhysicsEngineAudioProcessorEditor::comboBoxChanged(juce::ComboBox*
     if (comboBoxThatHasChanged == &reedModeSelector) {
         int selectedMode = reedModeSelector.getSelectedId();
         audioProcessor.setReedMode(selectedMode);
-        DBG("Reed mode changed to: " + juce::String(selectedMode));
+//        DBG("Reed mode changed to: " + juce::String(selectedMode));
     }
 }
