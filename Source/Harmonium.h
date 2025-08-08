@@ -325,12 +325,12 @@ public:
         DBG("Amplitude scale: " + juce::String(amp));
     }
 
-    void setLows(int value) {
-        for (auto& voice : voices_) {
-            voice->setLows(value);
-        }
-        DBG("Lows: " + juce::String(value));
-    }
+//    void setLows(int value) {
+//        for (auto& voice : voices_) {
+//            voice->setLows(value);
+//        }
+//        DBG("Lows: " + juce::String(value));
+//    }
 
 
     // Physics diagnostics

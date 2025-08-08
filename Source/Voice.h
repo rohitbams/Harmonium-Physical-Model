@@ -160,9 +160,9 @@ public:
         physicsConfig_.amplitudeScale = amp;
     }
 
-    void setLows(int value) {
-        physicsConfig_.low = value;
-    }
+//    void setLows(int value) {
+//        physicsConfig_.low = value;
+//    }
     
     void setMu(double mu) {
         physicsConfig_.mu = std::clamp(mu, 1e-6, 1e-1);
@@ -189,7 +189,7 @@ public:
     
 //    double getAverageAmplitude() const {
 //        if (!isActive_ || reedInstances_.empty()) return 0.0;
-//        
+//
 //        double totalAmplitude = 0.0;
 //        for (const auto& reed : reedInstances_) {
 //            totalAmplitude += reed.physicsState.getAmplitude();

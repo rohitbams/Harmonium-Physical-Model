@@ -183,7 +183,7 @@ HarmoniumPhysicsEngineAudioProcessorEditor::HarmoniumPhysicsEngineAudioProcessor
     // Master gain control
     masterGainSlider.setSliderStyle(juce::Slider::LinearHorizontal);
     masterGainSlider.setRange(0.0, 1.0, 0.01);
-    masterGainSlider.setValue(0.3);
+    masterGainSlider.setValue(0.4);
     masterGainSlider.addListener(this);
     addAndMakeVisible(masterGainSlider);
 
@@ -416,9 +416,9 @@ void HarmoniumPhysicsEngineAudioProcessorEditor::sliderValueChanged(juce::Slider
     if (slider == &amplitudeSlider) {
         audioProcessor.setAmplitudeScaling(static_cast<int>(amplitudeSlider.getValue()));
     }
-    if (slider == &lowSlider) {
-        audioProcessor.setLows(static_cast<int>(lowSlider.getValue()));
-    }
+//    if (slider == &lowSlider) {
+//        audioProcessor.setLows(static_cast<int>(lowSlider.getValue()));
+//    }
 //    else if (slider == &qSlider) {
 //        audioProcessor.setQFactor(static_cast<float>(qSlider.getValue()));
 //    }

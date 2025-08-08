@@ -49,15 +49,22 @@ struct HarmoniumPhysicsConfig {
     double Sr = 4e-4; // eeed cross-section area (m²)
     double alpha = 0.8; // flow coefficient
     double reedWidth = 0.02; // reed width (m)
-    int amplitudeScale = 500;
+    int amplitudeScale = 50;
     double minOscillationLevel = 1e-6;
     double targetAmplitude = 5e-5;
     double restGap = 3e-5;
     double saturationFactor = 0.1;
     
     double low = 2.0;       // 15 - 200
-    double lowMid = 0.0;    // 200 - 400
-    double mid = 0.0;       // 400 - 900
-    double highMid = 0.0;   // 900 - 4000
-    double high = 0.0;      // 4000 - 20000
+    double lowMid = 1.0;    // 200 - 400
+    double mid = 1.0;       // 400 - 900
+    double highMid = 1.0;   // 900 - 4000
+    double high = 1.0;      // 4000 - 20000
+    
+    // new small tuning params
+    double nonlinK = 1.0;        // cubic nonlinearity strength (0.. few)
+    double asymmetryK = 0.5;     // asymmetry gain producing even harmonics
+    double hfBoost = 5.0;        // multiplier for HF differentiator (brightness)
+    double noiseLevel = 1e-5;    // breath/noise level (added to output)
+    double outputGain = 1.0;     // final gain applied to output
 };

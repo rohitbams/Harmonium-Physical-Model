@@ -37,7 +37,7 @@ public:
     void stopAllNotes();
     bool isNoteCurrentlyOn() const;
     
-    void setLows(int value);
+//    void setLows(int value);
     
     void setAmplitudeScaling(int amp);
     void setAirCapacity(float value);

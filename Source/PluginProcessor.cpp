@@ -189,12 +189,12 @@ void HarmoniumPhysicsEngineAudioProcessor::setAmplitudeScaling(int amp) {
 
 
 // EQ
-void HarmoniumPhysicsEngineAudioProcessor::setLows(int value) {
-    if (harmonium) {
-        harmonium->setLows(value);
-        DBG("lows: " + juce::String(value));
-    }
-}
+//void HarmoniumPhysicsEngineAudioProcessor::setLows(int value) {
+//    if (harmonium) {
+//        harmonium->setLows(value);
+//        DBG("lows: " + juce::String(value));
+//    }
+//}
 
 
 void HarmoniumPhysicsEngineAudioProcessor::setAirCapacity(float value) {
