@@ -1,4 +1,4 @@
-// PluginProcessor.cpp - Complete implementation
+// PluginProcessor.cpp
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 

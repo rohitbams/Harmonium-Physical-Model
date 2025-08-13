@@ -19,46 +19,20 @@ public:
      * This method calls and implements all main physics equations
      *
      */
-    static HarmoniumState updatePhysics(
-        const HarmoniumState& currentState,
-        const HarmoniumPhysicsConfig& config,
-        double bellowsFlowRate,
-        double bellowsPressure,
-        double omega0
-    ) {
+    static HarmoniumState updatePhysics( const HarmoniumState& currentState, const HarmoniumPhysicsConfig& config, double bellowsFlowRate, double bellowsPressure, double omega0) {
+        
         HarmoniumState newState = currentState;
         
-        // calculate pressure dependent damping
         calculatePressureDependentDamping(newState, config, omega0);
-        
-        // calculate forces (equation 5)
         calculateReedForces(newState, config, omega0);
-        
-        // apply oscillation startup
         handleOscillationStartup(newState, config);
-        
-        // apply energy input for sustained oscillation
         applyEnergyInput(newState, config);
-        
-        // integrate reed motion (Equation 4)
         integrateReedMotion(newState, config);
-        
-        // handle low amplitude restart
-        handleLowAmplitudeRestart(newState, config);
-        
-        // calculate volume flow (Equation 5)
         calculateVolumeFlow(newState, config);
-        
-        // update reed chamber pressure (Equation 1)
         updateChamberPressure(newState, config, bellowsFlowRate);
-        
-        // update jet dynamics (Equations 2 & 3)
         updateJetDynamics(newState, config);
-        
-        // apply physical limits
         applyPhysicalLimits(newState);
         
-        // update flow history
         newState.u_previous = currentState.u;
         newState.p0 = bellowsPressure;
         
@@ -71,6 +45,9 @@ public:
     static float generateAudio(const HarmoniumState& state, const HarmoniumPhysicsConfig& config) {
         double totalFlowFundamental = state.u * (config.amplitudeScale);
         double fundamental = state.u;
+        
+        double fundamentalAmp = state.u * (config.amplitudeScale);
+        
 //        double reedPosFundamental = state.reedPosition * amplitudeScale;
         
         /*
@@ -88,19 +65,19 @@ public:
         double highMid = config.highMid;   // 900 - 4000
         double high = config.high;         // 4000 - 20000
         
-        // -- rich harmonic profile based on hinge og recording -- //
-        double harmonic2 = fundamental * 2 * (config.amplitudeScale * 0.96   /   low);     // 698.4 / 2
-        double harmonic3 = fundamental * 5 * (config.amplitudeScale * 0.63   /   highMid); // 1746.0 / 5
-        double harmonic4 = fundamental * 4 * (config.amplitudeScale * 0.60   /   highMid); // 1396.8 / 4
-        double harmonic5 = fundamental * 3 * (config.amplitudeScale * 0.57   /   highMid); // 1047.6 / 3
-        double harmonic6 = fundamental * 9 * (config.amplitudeScale * 0.34   /   highMid); // 3142.8 / 9
-        double harmonic7 = fundamental * 6 * (config.amplitudeScale * 0.32   /   highMid); // 2095.2 / 6
-        double harmonic8 = fundamental * 11 * (config.amplitudeScale * 0.32  /   highMid); // 3841.4 / 11
-        double harmonic9 = fundamental * 13 * (config.amplitudeScale * 0.21  /   high);    // 4539.8 / 13
+        // -- rich harmonic profile based on hinge og recording -- //                      // peak / overtone
+        double harmonic2  = fundamental * 2  * (config.amplitudeScale * 0.96 /   low);     //  698.4 / 2
+        double harmonic3  = fundamental * 5  * (config.amplitudeScale * 0.63 /   low);     // 1746.0 / 5
+        double harmonic4  = fundamental * 4  * (config.amplitudeScale * 0.60 /   low);     // 1396.8 / 4
+        double harmonic5  = fundamental * 3  * (config.amplitudeScale * 0.57 /   highMid); // 1047.6 / 3
+        double harmonic6  = fundamental * 9  * (config.amplitudeScale * 0.34 /   highMid); // 3142.8 / 9
+        double harmonic7  = fundamental * 6  * (config.amplitudeScale * 0.32 /   highMid); // 2095.2 / 6
+        double harmonic8  = fundamental * 11 * (config.amplitudeScale * 0.32 /   highMid); // 3841.4 / 11
+        double harmonic9  = fundamental * 13 * (config.amplitudeScale * 0.21 /   high);    // 4539.8 / 13
         double harmonic10 = fundamental * 17 * (config.amplitudeScale * 0.20 /   high);    // 5936.6 / 17
         double harmonic11 = fundamental * 15 * (config.amplitudeScale * 0.15 /   high);    // 5238.2 / 15
         double harmonic12 = fundamental * 19 * (config.amplitudeScale * 0.18 /   high);    // 6635.0 / 19
-        double harmonic13 = fundamental * 7 * (config.amplitudeScale * 0.14  /   high);    // 2444.4 / 7
+        double harmonic13 = fundamental * 7  * (config.amplitudeScale * 0.14 /   high);    // 2444.4 / 7
         double harmonic14 = fundamental * 12 * (config.amplitudeScale * 0.10 /   high);    // 4190.6 / 12
         double harmonic15 = fundamental * 21 * (config.amplitudeScale * 0.08 /   high);    // 7333.3 / 21
         
@@ -121,26 +98,13 @@ public:
                             + harmonic14
                             + harmonic15;
 
-//        return static_cast<float>(richHarmonic);
-        //        richHarmonic = std::tanh(richHarmonic * 2.5);
+        // total flow output with spectral modification
         
-        // -- mix wave with saturation -- //
-//        double mixWave = (totalFlowFundamental) + (reedPosFundamental) + (richHarmonic);
-//        mixWave = std::tanh(mixWave * 3) * 0.5;
-//        mixWave = std::tanh((std::tanh(mixWave * 3) * 0.5) * 1.5) * 0.7;
-        
-//        const HarmoniumState& saturationFactor;
-        
-        totalFlowFundamental = std::tanh(richHarmonic * 5.0);
+//        richHarmonic = std::tanh(richHarmonic);
         return static_cast<float>(richHarmonic);
-//        return static_cast<float>(reedPosFundamental);
-        
-        
-        
-//        double finalOutput = std::tanh(finalOutput * 1.5) * 0.7;
-//        return static_cast<float>(finalOutput);
-        
 
+        // total flow output without spectral modification
+//        return static_cast<float>(fundamentalAmp);
         
     }
     
@@ -161,7 +125,7 @@ public:
     }
 
 private:
-    // pressure-dependent damping
+    // artificial pressure-dependent damping to artifically elongate decay
     static void calculatePressureDependentDamping(HarmoniumState& state, const HarmoniumPhysicsConfig& config, double omega0) {
         double effectiveQ = config.Q;
         double airPressureRatioFactor = 1000.0; // TODO: make user controllable in GUI
@@ -183,7 +147,7 @@ private:
         state.acceleration = state.drivingForce - state.springForce - state.dampingForce;
     }
     
-    // oscillation startup
+    // apply initial seed to force oscillation for blown-closed reed (-,+)
     static void handleOscillationStartup(HarmoniumState& state, const HarmoniumPhysicsConfig& config) {
         if (std::abs(state.p2) > 50.0) {
             double minAmplitude = 1e-5;
@@ -215,19 +179,6 @@ private:
         state.reedPosition += state.reedVelocity * config.dt;
     }
     
-    // low amplitude restart mechanism
-    static void handleLowAmplitudeRestart(HarmoniumState& state, const HarmoniumPhysicsConfig& config) {
-        if (std::abs(state.reedPosition) < config.minOscillationLevel &&
-            std::abs(state.reedVelocity) < config.minOscillationLevel) {
-            
-            if (std::abs(state.p2) > 100.0) {
-//                double pressureRatio = std::clamp(std::abs(state.p2) / 1000.0, 0.01, 0.05);
-                
-                state.reedPosition += (state.p2 > 0 ? 1.0 : -1.0) * config.minOscillationLevel * 10.0 /** pressureRatio*/;
-                state.reedVelocity += config.mu * state.p2 * config.dt /** pressureRatio*/;
-            }
-        }
-    }
     
     // volume flow calculation (Equation 5 total volume flow)
     static void calculateVolumeFlow(HarmoniumState& state, const HarmoniumPhysicsConfig& config) {
@@ -241,24 +192,30 @@ private:
         
     }
     
-    // chamber pressure update (equation 1 mass conservation)
+    // reed chamber pressure update (equation 1)
     static void updateChamberPressure(HarmoniumState& state, const HarmoniumPhysicsConfig& config, double u0) {
         // V₁/c₀² × d(p₁-p_atm)/dt = ρ₀(u₀ - u)
         state.netFlow = u0 - state.u; // (u₀ - u)
-        double denominator = config.V1 / (config.c0 * config.c0); // V₁/c₀²
-        double dp1_dt = (config.rho0 * state.netFlow) / denominator; //
-
-        state.p1 += dp1_dt * config.dt;
+        double denominator = config.V1 / (config.c0 * config.c0);
+        double dp1_dt = (config.rho0 * state.netFlow) / denominator;
+        
+//        state.p1 += dp1_dt * config.dt;
+        
+        if (state.p0 > 50.0) {
+            state.p1 += dp1_dt * config.dt + 100; // artifically managing pressure p1 in reed chamber based on pressure p0 in bellows chamber
+        }
+        
+        else state.p1 += dp1_dt * config.dt;
         
         // natural pressure decay when no net flow
         if (std::abs(state.netFlow) < 1e-6) {
-            state.p1 *= 0.997;
+            state.p1 *= 0.996;
             state.p1 = std::max(0.0, state.p1);
         }
         
     }
     
-    // Jet dynamics update (Equations 2 and 3)
+    // narrow jet dynamics update (equations 2 and 3)
     static void updateJetDynamics(HarmoniumState& state, const HarmoniumPhysicsConfig& config) {
     /// Equation 2:   p₁  =  p₂  +  ρ₀L₂/S₂  ×  du/dt
         double du_dt = (state.u - state.u_previous) / config.dt;
@@ -274,13 +231,13 @@ private:
         }
     }
     
-    // apply physical limits for numerical stability
+    // physical limits to maintain numerical stability
     static void applyPhysicalLimits(HarmoniumState& state) {
         state.reedPosition = std::clamp(state.reedPosition, -0.01, 0.01);
         state.reedVelocity = std::clamp(state.reedVelocity, -20.0, 20.0);
         state.p1 = std::clamp(state.p1, 0.0, 2000.0);
-        state.p2 = std::clamp(state.p2, 0.0, 1500.0);
-        state.vj = std::clamp(state.vj, 0.0, 100.0);
+        state.p2 = std::clamp(state.p2, -100.0, 1500.0);
+        state.vj = std::clamp(state.vj, 0.0, 200.0);
         state.u = std::clamp(state.u, -0.1, 0.1);
 //        state.saturationFactor = std::clamp(state.saturationFactor, 0.1, 5.0);
     }

@@ -208,7 +208,7 @@ private:
                 
             case DOUBLE_REED:
                 reedInstances_.emplace_back(0.0); // Fundamental
-                reedInstances_.emplace_back(-12.0); // One octave lower
+                reedInstances_.emplace_back(-12.1); // One octave lower
                 break;
                     
             case TRIPLE_REED:

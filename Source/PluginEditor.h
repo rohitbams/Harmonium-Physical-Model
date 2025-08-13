@@ -183,7 +183,7 @@ HarmoniumPhysicsEngineAudioProcessorEditor::HarmoniumPhysicsEngineAudioProcessor
     // Master gain control
     masterGainSlider.setSliderStyle(juce::Slider::LinearHorizontal);
     masterGainSlider.setRange(0.0, 1.0, 0.01);
-    masterGainSlider.setValue(0.4);
+    masterGainSlider.setValue(0.2);
     masterGainSlider.addListener(this);
     addAndMakeVisible(masterGainSlider);
 
@@ -217,13 +217,13 @@ HarmoniumPhysicsEngineAudioProcessorEditor::HarmoniumPhysicsEngineAudioProcessor
     physicsTitle.setFont(juce::FontOptions(16.0f, juce::Font::bold));
     addAndMakeVisible(physicsTitle);
     
-    p0Display.setText("p0 (Bellows): -- Pa", juce::dontSendNotification);
+    p0Display.setText("Air mass (Bellows): -- Pa", juce::dontSendNotification);
     addAndMakeVisible(p0Display);
     
-    p1Display.setText("p1 (Chamber): -- Pa", juce::dontSendNotification);
+    p1Display.setText("p1 (Reed chamber): -- Pa", juce::dontSendNotification);
     addAndMakeVisible(p1Display);
     
-    p2Display.setText("p2 (Jet): -- Pa", juce::dontSendNotification);
+    p2Display.setText("p2 (Narrow jet): -- Pa", juce::dontSendNotification);
     addAndMakeVisible(p2Display);
     
     reedPositionDisplay.setText("Reed Position: -- m", juce::dontSendNotification);
@@ -392,8 +392,8 @@ void HarmoniumPhysicsEngineAudioProcessorEditor::timerCallback() {
 //    double highMids = audioProcessor.getHighMids();
 //    double highs = audioProcessor.getHighs();
 
-    p0Display.setText("p0 (Bellows): " + juce::String(p0, 1) + " Pa", juce::dontSendNotification);
-    p1Display.setText("p1 (Chamber): " + juce::String(p1, 1) + " Pa", juce::dontSendNotification);
+    p0Display.setText("AirMass (Bellows): " + juce::String(p0, 1) + " Pa", juce::dontSendNotification);
+    p1Display.setText("p1 (Reed chamber): " + juce::String(p1, 1) + " Pa", juce::dontSendNotification);
     p2Display.setText("p2 (Narrow jet): " + juce::String(p2, 1) + " Pa", juce::dontSendNotification);
     reedPositionDisplay.setText("Reed Position: " + juce::String(reedPosition, 6) + " m", juce::dontSendNotification);
     reedVelocityDisplay.setText("Reed Velocity: " + juce::String(reedVelocity, 3) + " m/s", juce::dontSendNotification);

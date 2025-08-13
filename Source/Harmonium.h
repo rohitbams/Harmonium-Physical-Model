@@ -178,7 +178,7 @@ public:
 //        DBG("Harmonium initialised successfully");
     }
         
-    // main processing
+    // main processing per sample
     float processSample() {
         updateCurrentState();
         
@@ -231,7 +231,7 @@ public:
         return convolutionProcessor_ ? convolutionProcessor_->getEnabled() : false;
     }
     
-    // TODO: fix new note being played when an old note is held
+    
     void startNote(double frequency) {
         
         Voice* selectedVoice = selectVoice();
@@ -333,7 +333,7 @@ public:
 //    }
 
 
-    // Physics diagnostics
+    // physics diagnostics
     const PhysicsState& getPhysicsState() const {
         return currentState_;
     }
@@ -403,6 +403,9 @@ private:
         }
     }
         
+    /*
+     * this method updates the physcics state per processed sample
+     */
     void updateCurrentState() {
         // find first active voice for diagnostics
         Voice* activeVoice = nullptr;
