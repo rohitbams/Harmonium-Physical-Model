@@ -202,7 +202,6 @@ HarmoniumPhysicsEngineAudioProcessorEditor::HarmoniumPhysicsEngineAudioProcessor
     reedModeLabel.setText("Reed Mode:", juce::dontSendNotification);
     reedModeLabel.attachToComponent(&reedModeSelector, true);
     addAndMakeVisible(reedModeLabel);
-
 //    // Polyphony toggle
 //    polyMonoButton.setButtonText("Polyphonic");
 //    polyMonoButton.setToggleState(true, juce::dontSendNotification);
@@ -217,7 +216,7 @@ HarmoniumPhysicsEngineAudioProcessorEditor::HarmoniumPhysicsEngineAudioProcessor
     physicsTitle.setFont(juce::FontOptions(16.0f, juce::Font::bold));
     addAndMakeVisible(physicsTitle);
     
-    p0Display.setText("Air mass (Bellows): -- Pa", juce::dontSendNotification);
+    p0Display.setText("p0 (Bellows): -- Pa", juce::dontSendNotification);
     addAndMakeVisible(p0Display);
     
     p1Display.setText("p1 (Reed chamber): -- Pa", juce::dontSendNotification);

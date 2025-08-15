@@ -5,6 +5,10 @@
 #include "HarmoniumState.h"
 #include "PhysicsEngine.h"
 
+/*
+ * The Voice class.
+ * This class handles polyphonic voice stealing, read instances
+ */
 class Voice {
 public:
     enum ReedMode {
@@ -30,13 +34,7 @@ private:
 //            double frequency = currentFrequency_;
 //            double omega0 = PhysicsEngine::calculateOmega0(baseFrequency);
             
-            physicsState = PhysicsEngine::updatePhysics(
-                physicsState,
-                config,
-                bellowsFlow,
-                bellowsPressure,
-                omega0
-            );
+            physicsState = PhysicsEngine::main(physicsState,config,bellowsFlow,bellowsPressure,omega0);
             
             
             return PhysicsEngine::generateAudio(physicsState, config);

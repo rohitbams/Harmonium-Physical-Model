@@ -2,8 +2,8 @@
 #pragma once
 #include <cmath>
 
-/*
- * HarmoniumState struct includes all model variables of the state
+/* rename to changing variables
+ * HarmoniumState struct includes member variables that are computed in the equations
  *
  */
  struct HarmoniumState {
@@ -34,8 +34,8 @@
   
 };
 
-/*
- * PhysicsConfig strcture includes all variables that
+/* rename to fixed variables
+ * PhysicsConfig strcture includes variables that are constants the equations, and config variables setting
  *
  */
 struct HarmoniumPhysicsConfig {

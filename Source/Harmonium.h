@@ -27,7 +27,7 @@ private:
 
     /*
      * The Bellows class.
-     * This class handles the bellowing mechanism.
+     * This private class handles the novel bellowing mechanism.
      * It calculates the air inflow and the pressure variation in the bellows chamber.
      * It also handels modulation wheen interaction on the MIDI keyboard.
      * The Bellows mode can be turned off to simulate a constant inifinite air supply.
@@ -54,6 +54,7 @@ private:
         double previousModWheelValue_ = 0.0;
         double minMovementThreshold_ = 0.01;  // minimum movement to trigger pump
         double continuousPumpingRate_ = 0.0; // current pumping rate (kgs/s)
+        double pumpingRate = 0.8;
         
         // bellows chamber spring pressure variables
 //        double springConstant_ = 500.0; // spring stiffness
@@ -98,7 +99,8 @@ private:
             if (std::abs(pressureDiff) > 2.0) {
                 
                 double flowDirection = (pressureDiff > 0) ? 1.0 : -1.0;
-                double velocity = std::sqrt(std::abs(pressureDiff) / 1.225);
+//                double velocity = std::sqrt(std::abs(pressureDiff) / 1.225); // 1.255 is air density (rho0)
+                double velocity = std::sqrt(2.0 * std::abs(pressureDiff) / 1.225); // 1.255 is air density (rho0)
                 
                 if (keyPressed_) {
                     // keys pressed, full connection (valve fully open)
@@ -140,12 +142,12 @@ private:
 
         void setMaxReedChamberAirMass(double mass) {
             maxReedChamberMass_ = std::clamp(mass, 0.1, 0.2);
-            if (reedChamberMass_ > maxReedChamberMass_) reedChamberMass_ = maxReedChamberMass_ * 0.8;
+            if (reedChamberMass_ > maxReedChamberMass_) reedChamberMass_ = maxReedChamberMass_ * pumpingRate;
         }
         
         void setMaxNarrowJetAirMass(double mass) {
             narrowJetMass_ = std::clamp(mass, 0.1, 0.2);
-            if (narrowJetMass_ > maxNarrowJetMass_) narrowJetMass_ = maxNarrowJetMass_ * 0.8;
+            if (narrowJetMass_ > maxNarrowJetMass_) narrowJetMass_ = maxNarrowJetMass_ * pumpingRate;
         }
         
         void setBaseConsumptionRate(double rate) {
