@@ -46,7 +46,7 @@ public:
         double totalFlowFundamental = state.u * (config.amplitudeScale);
         double fundamental = state.u;
         
-        double fundamentalAmp = state.u * (config.amplitudeScale); // total flow output without spectral profile modification
+        double ampedFundamental = state.u * (config.amplitudeScale); // total flow output without spectral profile modification
         
 //        double reedPosFundamental = state.reedPosition * amplitudeScale;
         
@@ -65,21 +65,37 @@ public:
         double highMid = config.highMid;   // 900 - 4000
         double high = config.high;         // 4000 - 20000
         
+//        // -- rich harmonic profile based on hinge og recording -- //                    //   peak / overtone (based on spectral analysis on F4 played on hinge analysis)
+//        double harmonic2  = fundamental * 2  * (config.amplitudeScale * 0.96 / low);     //  698.4 / 2
+//        double harmonic3  = fundamental * 5  * (config.amplitudeScale * 0.63 / low);     // 1746.0 / 5
+//        double harmonic4  = fundamental * 4  * (config.amplitudeScale * 0.60 / low);     // 1396.8 / 4
+//        double harmonic5  = fundamental * 3  * (config.amplitudeScale * 0.57 / highMid); // 1047.6 / 3
+//        double harmonic6  = fundamental * 9  * (config.amplitudeScale * 0.34 / highMid); // 3142.8 / 9
+//        double harmonic7  = fundamental * 6  * (config.amplitudeScale * 0.32 / highMid); // 2095.2 / 6
+//        double harmonic8  = fundamental * 11 * (config.amplitudeScale * 0.32 / highMid); // 3841.4 / 11
+//        double harmonic9  = fundamental * 13 * (config.amplitudeScale * 0.21 / high);    // 4539.8 / 13
+//        double harmonic10 = fundamental * 17 * (config.amplitudeScale * 0.20 / high);    // 5936.6 / 17
+//        double harmonic11 = fundamental * 15 * (config.amplitudeScale * 0.15 / high);    // 5238.2 / 15
+//        double harmonic12 = fundamental * 19 * (config.amplitudeScale * 0.18 / high);    // 6635.0 / 19
+//        double harmonic13 = fundamental * 7  * (config.amplitudeScale * 0.14 / high);    // 2444.4 / 7
+//        double harmonic14 = fundamental * 12 * (config.amplitudeScale * 0.10 / high);    // 4190.6 / 12
+//        double harmonic15 = fundamental * 21 * (config.amplitudeScale * 0.08 / high);    // 7333.3 / 21
+        
         // -- rich harmonic profile based on hinge og recording -- //                    //   peak / overtone (based on spectral analysis on F4 played on hinge analysis)
-        double harmonic2  = fundamental * 2  * (config.amplitudeScale * 0.96 / low);     //  698.4 / 2
-        double harmonic3  = fundamental * 5  * (config.amplitudeScale * 0.63 / low);     // 1746.0 / 5
-        double harmonic4  = fundamental * 4  * (config.amplitudeScale * 0.60 / low);     // 1396.8 / 4
-        double harmonic5  = fundamental * 3  * (config.amplitudeScale * 0.57 / highMid); // 1047.6 / 3
-        double harmonic6  = fundamental * 9  * (config.amplitudeScale * 0.34 / highMid); // 3142.8 / 9
-        double harmonic7  = fundamental * 6  * (config.amplitudeScale * 0.32 / highMid); // 2095.2 / 6
-        double harmonic8  = fundamental * 11 * (config.amplitudeScale * 0.32 / highMid); // 3841.4 / 11
-        double harmonic9  = fundamental * 13 * (config.amplitudeScale * 0.21 / high);    // 4539.8 / 13
-        double harmonic10 = fundamental * 17 * (config.amplitudeScale * 0.20 / high);    // 5936.6 / 17
-        double harmonic11 = fundamental * 15 * (config.amplitudeScale * 0.15 / high);    // 5238.2 / 15
-        double harmonic12 = fundamental * 19 * (config.amplitudeScale * 0.18 / high);    // 6635.0 / 19
-        double harmonic13 = fundamental * 7  * (config.amplitudeScale * 0.14 / high);    // 2444.4 / 7
-        double harmonic14 = fundamental * 12 * (config.amplitudeScale * 0.10 / high);    // 4190.6 / 12
-        double harmonic15 = fundamental * 21 * (config.amplitudeScale * 0.08 / high);    // 7333.3 / 21
+        double harmonic2  = ampedFundamental * 2  * 0.96 / low;     //  698.4 / 2
+        double harmonic3  = ampedFundamental * 5  * 0.63 / low;     // 1746.0 / 5
+        double harmonic4  = ampedFundamental * 4  * 0.60 / low;     // 1396.8 / 4
+        double harmonic5  = ampedFundamental * 3  * 0.57 / highMid; // 1047.6 / 3
+        double harmonic6  = ampedFundamental * 9  * 0.34 / highMid; // 3142.8 / 9
+        double harmonic7  = ampedFundamental * 6  * 0.32 / highMid; // 2095.2 / 6
+        double harmonic8  = ampedFundamental * 11 * 0.32 / highMid; // 3841.4 / 11
+        double harmonic9  = ampedFundamental * 13 * 0.21 / high;    // 4539.8 / 13
+        double harmonic10 = ampedFundamental * 17 * 0.20 / high;    // 5936.6 / 17
+        double harmonic11 = ampedFundamental * 15 * 0.15 / high;    // 5238.2 / 15
+        double harmonic12 = ampedFundamental * 19 * 0.18 / high;    // 6635.0 / 19
+        double harmonic13 = ampedFundamental * 7  * 0.14 / high;    // 2444.4 / 7
+        double harmonic14 = ampedFundamental * 12 * 0.10 / high;    // 4190.6 / 12
+        double harmonic15 = ampedFundamental * 21 * 0.08 / high;    // 7333.3 / 21
         
         
         double richHarmonic = totalFlowFundamental // total flow output with spectral modification
@@ -102,7 +118,7 @@ public:
         return static_cast<float>(richHarmonic);
 
         // total flow output without spectral modification
-        // return static_cast<float>(fundamentalAmp);
+        // return static_cast<float>(ampedFundamental);
         
     }
     
