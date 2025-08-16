@@ -31,7 +31,7 @@ private:
             // TODO: calculate detuned pitches
             double detunedFreq = PhysicsEngine::calculateDetunedFrequency(baseFrequency, detuning_cents);
             double omega0 = PhysicsEngine::calculateOmega0(detunedFreq);
-//            double frequency = currentFrequency_;
+//            double frequency = currentFrequency;
 //            double omega0 = PhysicsEngine::calculateOmega0(baseFrequency);
             
             physicsState = PhysicsEngine::main(physicsState,config,bellowsFlow,bellowsPressure,omega0);
@@ -43,12 +43,12 @@ private:
 
     HarmoniumPhysicsConfig physicsConfig;
     std::vector<ReedInstance> reedInstances;
-    ReedMode reedMode_;
-    bool isActive_ = false;
-    double currentFrequency_ = 0;
+    ReedMode reedMode;
+    bool isActive = false;
+    double currentFrequency = 0;
 
 public:
-    explicit Voice(double sampleRate) : reedMode_(SINGLE_REED) {
+    explicit Voice(double sampleRate) : reedMode(SINGLE_REED) {
         physicsConfig.sampleRate = sampleRate;
         physicsConfig.dt = 1.0 / sampleRate;
         reedInstances.emplace_back(0.0);
@@ -56,10 +56,10 @@ public:
     }
     
     void setReedMode(ReedMode mode) {
-        reedMode_ = mode;
+        reedMode = mode;
         
-        if (isActive_) {
-            createReedsForMode(currentFrequency_);
+        if (isActive) {
+            createReedsForMode(currentFrequency);
         }
         
         DBG("Reed mode: " + juce::String(mode == SINGLE_REED ? "Single" :
@@ -67,17 +67,17 @@ public:
     }
     
     void startNote(double frequency) {
-        if (isActive_) return;
+        if (isActive) return;
         
-        currentFrequency_ = frequency;
-        isActive_ = true;
+        currentFrequency = frequency;
+        isActive = true;
         
         createReedsForMode(frequency);
-        DBG("Voice startNote: " + juce::String(frequency) + " Hz, stored as: " + juce::String(currentFrequency_));
+        DBG("Voice startNote: " + juce::String(frequency) + " Hz, stored as: " + juce::String(currentFrequency));
     }
     
     void stopNote() {
-        isActive_ = false;
+        isActive = false;
         
         // reset all reed
         for (auto& reed : reedInstances) {
@@ -88,14 +88,14 @@ public:
     }
     
     float processSample(double bellowsFlowRate, double bellowsPressure) {
-        if (!isActive_ || reedInstances.empty()) return 0.0f;
+        if (!isActive || reedInstances.empty()) return 0.0f;
         
         float mixedOutput = 0.0f;
         double airflowPerReed = bellowsFlowRate / reedInstances.size();
         
         // process each reed
         for (auto& reedInstance : reedInstances) {
-            float reedOutput = reedInstance.processSample(physicsConfig, airflowPerReed, bellowsPressure, currentFrequency_);
+            float reedOutput = reedInstance.processSample(physicsConfig, airflowPerReed, bellowsPressure, currentFrequency);
             mixedOutput += reedOutput;
         }
         
@@ -103,41 +103,41 @@ public:
 //        if (reedInstances.size() > 1) {
 //            mixedOutput /= std::sqrt(reedInstances.size());
 //        }
-//        DBG("Processing with frequency: " + juce::String(currentFrequency_));
+//        DBG("Processing with frequency: " + juce::String(currentFrequency));
 
         return mixedOutput;
     }
     
-    bool isAvailable() const { return !isActive_; }
-    bool getIsActive() const { return isActive_; }
+    bool isAvailable() const { return !isActive; }
+    bool getIsActive() const { return isActive; }
     bool matchesFrequency(double freq) const {
-        return isActive_ && std::abs(currentFrequency_ - freq) < 1.0;
+        return isActive && std::abs(currentFrequency - freq) < 1.0;
     }
-    double getCurrentFrequency() const { return currentFrequency_; }
-    ReedMode getReedMode() const { return reedMode_; }
+    double getCurrentFrequency() const { return currentFrequency; }
+    ReedMode getReedMode() const { return reedMode; }
     
     double getChamberPressure() const {
-        return isActive_ && !reedInstances.empty() ? reedInstances[0].physicsState.p1 : 0.0;
+        return isActive && !reedInstances.empty() ? reedInstances[0].physicsState.p1 : 0.0;
     }
     
     double getJetPressure() const {
-        return isActive_ && !reedInstances.empty() ? reedInstances[0].physicsState.p2 : 0.0;
+        return isActive && !reedInstances.empty() ? reedInstances[0].physicsState.p2 : 0.0;
     }
     
     double getReedPosition() const {
-        return isActive_ && !reedInstances.empty() ? reedInstances[0].physicsState.reedPosition : 0.0;
+        return isActive && !reedInstances.empty() ? reedInstances[0].physicsState.reedPosition : 0.0;
     }
     
     double getReedVelocity() const {
-        return isActive_ && !reedInstances.empty() ? reedInstances[0].physicsState.reedVelocity : 0.0;
+        return isActive && !reedInstances.empty() ? reedInstances[0].physicsState.reedVelocity : 0.0;
     }
     
     double getJetVelocity() const {
-        return isActive_ && !reedInstances.empty() ? reedInstances[0].physicsState.vj : 0.0;
+        return isActive && !reedInstances.empty() ? reedInstances[0].physicsState.vj : 0.0;
     }
     
     double getTotalVolumeFlow() const {
-        if (!isActive_ || reedInstances.empty()) return 0.0;
+        if (!isActive || reedInstances.empty()) return 0.0;
         double totalFlow = 0.0;
         for (const auto& reed : reedInstances) {
             totalFlow += reed.physicsState.u;
@@ -146,7 +146,7 @@ public:
     }
     
     double getDampingForce() const {
-        return isActive_ && !reedInstances.empty() ? reedInstances[0].physicsState.dampingForce : 0.0;
+        return isActive && !reedInstances.empty() ? reedInstances[0].physicsState.dampingForce : 0.0;
     }
     
     void setAmplitudeScale(int amp) {
@@ -181,7 +181,7 @@ public:
     }
     
 //    double getAverageAmplitude() const {
-//        if (!isActive_ || reedInstances.empty()) return 0.0;
+//        if (!isActive || reedInstances.empty()) return 0.0;
 //
 //        double totalAmplitude = 0.0;
 //        for (const auto& reed : reedInstances) {
@@ -194,7 +194,7 @@ private:
     void createReedsForMode(double frequency) {
         reedInstances.clear();
         
-        switch (reedMode_) {
+        switch (reedMode) {
             case SINGLE_REED:
                 reedInstances.emplace_back(0.0);   // No detuning
                 break;

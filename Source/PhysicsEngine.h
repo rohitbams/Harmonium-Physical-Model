@@ -81,7 +81,7 @@ public:
 //        double harmonic14 = fundamental * 12 * (config.amplitudeScale * 0.10 / high);    // 4190.6 / 12
 //        double harmonic15 = fundamental * 21 * (config.amplitudeScale * 0.08 / high);    // 7333.3 / 21
         
-        // -- rich harmonic profile based on hinge og recording -- //                    //   peak / overtone (based on spectral analysis on F4 played on hinge analysis)
+        // -- rich harmonic profile based on hinge og recording --  //   peak / overtone (based on harmonic ratios in F4 from hinge analysis)
         double harmonic2  = ampedFundamental * 2  * 0.96 / low;     //  698.4 / 2
         double harmonic3  = ampedFundamental * 5  * 0.63 / low;     // 1746.0 / 5
         double harmonic4  = ampedFundamental * 4  * 0.60 / low;     // 1396.8 / 4

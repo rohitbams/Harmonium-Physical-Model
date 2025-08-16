@@ -8,6 +8,7 @@
  */
  struct HarmoniumState {
      // core physics state
+     double u0 = 0.0; // bellows flow rate
      double p0 = 0.0; // bellows chamber pressure (Pa)
      double p1 = 0.0; // reed chamber pressure (Pa)
      double p2 = 0.0; // narrow jet pressure (Pa)
@@ -22,8 +23,10 @@
      double acceleration = 0.0; // Total acceleration (m/s²)
      double aperture = 0.0; // current reed aperture (m²)
      double netFlow = 0.0; // u₀ - u (m³/s)
-    
-    void reset() {
+     int oscillatingReeds = 0; // number of oscillating reeds
+   
+     
+     void reset() {
         *this = HarmoniumState{};
 //        reedVelocity = 1e-4;
     }
