@@ -6,8 +6,8 @@
               pluginManufacturer="rb341" pluginCode="HmPE">
   <MAINGROUP id="Bocj2O" name="Harmonium">
     <GROUP id="{44AB6928-0ED5-C78F-942C-ECAB500A407F}" name="Source">
-      <FILE id="DxhRUu" name="ConvolutionProcessor.h" compile="0" resource="0"
-            file="Source/ConvolutionProcessor.h"/>
+      <FILE id="nIOfcY" name="Bellows.h" compile="0" resource="0" file="Source/Bellows.h"/>
+      <FILE id="DxhRUu" name="Convolution.h" compile="0" resource="0" file="Source/Convolution.h"/>
       <FILE id="qqqZuH" name="Harmonium.h" compile="0" resource="0" file="Source/Harmonium.h"/>
       <FILE id="MMWVaL" name="Voice.h" compile="0" resource="0" file="Source/Voice.h"/>
       <FILE id="TSsuwr" name="PhysicsEngine.h" compile="0" resource="0" file="Source/PhysicsEngine.h"/>

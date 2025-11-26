@@ -1,9 +1,10 @@
-// PluginEditor.h
 #pragma once
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 
-
+/*
+ * PluginEditor class handles GUI implementation.
+ */
 class HarmoniumPhysicsEngineAudioProcessorEditor : public juce::AudioProcessorEditor,
                                                    public juce::Slider::Listener,
                                                    public juce::MidiKeyboardStateListener,
@@ -22,9 +23,6 @@ private:
     
     std::unique_ptr<juce::FileChooser> fileChooser;
     HarmoniumPhysicsEngineAudioProcessor& audioProcessor;
-    
-//    juce::MidiKeyboardState keyboardState;
-//    juce::MidiKeyboardComponent keyboardComponent;
     
     juce::Slider amplitudeSlider;
     juce::Label amplitudeLabel;
@@ -61,8 +59,6 @@ private:
     juce::ComboBox reedModeSelector;
     juce::Label reedModeLabel;
     
-//    juce::ToggleButton polyMonoButton;
-    
     juce::TextButton loadIRButton;
     juce::ToggleButton convolutionToggle;
     juce::Label irStatusLabel;
@@ -91,15 +87,7 @@ private:
 
 #include "PluginEditor.h"
 
-HarmoniumPhysicsEngineAudioProcessorEditor::HarmoniumPhysicsEngineAudioProcessorEditor(HarmoniumPhysicsEngineAudioProcessor& p)
-    : AudioProcessorEditor(&p), audioProcessor(p)
-//      keyboardComponent(keyboardState, juce::MidiKeyboardComponent::horizontalKeyboard)
-{
-//    // MIDI keyboard
-//    keyboardState.addListener(this);
-//    addAndMakeVisible(keyboardComponent);
-//    keyboardComponent.setMidiChannel(1);
-//    keyboardComponent.setKeyWidth(20.0f);
+HarmoniumPhysicsEngineAudioProcessorEditor::HarmoniumPhysicsEngineAudioProcessorEditor(HarmoniumPhysicsEngineAudioProcessor& p) : AudioProcessorEditor(&p), audioProcessor(p) {
     
     // Amplitude control
     amplitudeSlider.setRange(100, 3000);
@@ -111,7 +99,6 @@ HarmoniumPhysicsEngineAudioProcessorEditor::HarmoniumPhysicsEngineAudioProcessor
     amplitudeLabel.setText("Amplitude Scale", juce::dontSendNotification);
     amplitudeLabel.attachToComponent(&amplitudeSlider, true);
     addAndMakeVisible(amplitudeLabel);
-
 
     // EQ control
     //low
@@ -191,7 +178,7 @@ HarmoniumPhysicsEngineAudioProcessorEditor::HarmoniumPhysicsEngineAudioProcessor
     masterGainLabel.attachToComponent(&masterGainSlider, true);
     addAndMakeVisible(masterGainLabel);
 
-    // Reed mode selector
+    // reed mode selector
     reedModeSelector.addItem("Single Reed", 1);
     reedModeSelector.addItem("Double Reed", 2);
     reedModeSelector.addItem("Triple Reed", 3);
@@ -202,17 +189,9 @@ HarmoniumPhysicsEngineAudioProcessorEditor::HarmoniumPhysicsEngineAudioProcessor
     reedModeLabel.setText("Reed Mode:", juce::dontSendNotification);
     reedModeLabel.attachToComponent(&reedModeSelector, true);
     addAndMakeVisible(reedModeLabel);
-//    // Polyphony toggle
-//    polyMonoButton.setButtonText("Polyphonic");
-//    polyMonoButton.setToggleState(true, juce::dontSendNotification);
-//    polyMonoButton.onStateChange = [this] {
-//        audioProcessor.setPolyphonyMode(polyMonoButton.getToggleState());
-//        polyMonoButton.setButtonText(polyMonoButton.getToggleState() ? "Polyphonic" : "Monophonic");
-//    };
-//    addAndMakeVisible(polyMonoButton);
     
     // Physics displays
-//    physicsTitle.setText("Physics Engine Diagnostics", juce::dontSendNotification);
+//    physicsTitle.setText("State variables", juce::dontSendNotification);
     physicsTitle.setFont(juce::FontOptions(16.0f, juce::Font::bold));
     addAndMakeVisible(physicsTitle);
     
@@ -233,9 +212,6 @@ HarmoniumPhysicsEngineAudioProcessorEditor::HarmoniumPhysicsEngineAudioProcessor
     
     oscillatingReedsDisplay.setText("Oscillating Reeds: 0", juce::dontSendNotification);
     addAndMakeVisible(oscillatingReedsDisplay);
-    
-//    modWheelDisplay.setText("MIDI Mod Wheel (CC#1): Controls bellows pumping", juce::dontSendNotification);
-//    addAndMakeVisible(modWheelDisplay);
     
     loadIRButton.setButtonText("Load IR");
     loadIRButton.onClick = [this] { loadIRFile(); };
@@ -260,9 +236,7 @@ HarmoniumPhysicsEngineAudioProcessorEditor::HarmoniumPhysicsEngineAudioProcessor
     
 }
 
-HarmoniumPhysicsEngineAudioProcessorEditor::~HarmoniumPhysicsEngineAudioProcessorEditor() {
-//    keyboardState.removeListener(this);
-}
+HarmoniumPhysicsEngineAudioProcessorEditor::~HarmoniumPhysicsEngineAudioProcessorEditor() {}
 
 void HarmoniumPhysicsEngineAudioProcessorEditor::paint(juce::Graphics& g) {
     g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
@@ -282,65 +256,60 @@ void HarmoniumPhysicsEngineAudioProcessorEditor::resized() {
     const int labelWidth = 140;
     const int margin = 5;
     
-    // Controls section (left side)
+    // controls section (left side)
     auto controlsArea = area.removeFromLeft(400);
     controlsArea.removeFromTop(5);
     
-    // Row 1: Amplitude
+    // row 1: Amplitude
     auto ampArea = controlsArea.removeFromTop(sliderHeight);
     ampArea.removeFromLeft(labelWidth);
     amplitudeSlider.setBounds(ampArea);
     controlsArea.removeFromTop(margin);
     
-    // Row 2: Air capacity
+    // row 2: Air capacity
     auto airCapArea = controlsArea.removeFromTop(sliderHeight);
     airCapArea.removeFromLeft(labelWidth);
     airCapacitySlider.setBounds(airCapArea);
     controlsArea.removeFromTop(margin);
-    
-    // Row 3: Air consumption
+
+    // row 3: Air consumption
     auto airConsArea = controlsArea.removeFromTop(sliderHeight);
     airConsArea.removeFromLeft(labelWidth);
     airConsumptionSlider.setBounds(airConsArea);
     controlsArea.removeFromTop(margin);
     
-    // Row 4: Master gain
+    // row 4: Master gain
     auto gainArea = controlsArea.removeFromTop(sliderHeight);
     gainArea.removeFromLeft(labelWidth);
     masterGainSlider.setBounds(gainArea);
     controlsArea.removeFromTop(margin);
     
-    // Row 5: Reed mode
+    // row 5: Reed mode
     auto reedModeArea = controlsArea.removeFromTop(sliderHeight);
     reedModeArea.removeFromRight(labelWidth);
     reedModeArea.removeFromLeft(labelWidth);
     reedModeSelector.setBounds(reedModeArea);
     controlsArea.removeFromTop(margin);
     
-//    // Row 6: Polyphony
-//    auto polyArea = controlsArea.removeFromTop(sliderHeight);
-//    polyArea.removeFromLeft(labelWidth);
-//    polyMonoButton.setBounds(polyArea);
-    
-    // Row 7: reedChamber capacity
+    // row 7: reedChamber capacity
     auto reedChamberCapArea = controlsArea.removeFromTop(sliderHeight);
     reedChamberCapArea.removeFromLeft(labelWidth);
     reedChamberCapacitySlider.setBounds(reedChamberCapArea);
     controlsArea.removeFromTop(margin);
 
-    // Row 8: narrow jet capacity
+    // row 8: narrow jet capacity
     auto narrowJetCapArea = controlsArea.removeFromTop(sliderHeight);
     narrowJetCapArea.removeFromLeft(labelWidth);
     narrowJetCapacitySlider.setBounds(narrowJetCapArea);
     controlsArea.removeFromTop(margin);
 
-//    // Row 9: q factor
+//    // row 9: q factor
 //    auto qArea = controlsArea.removeFromTop(sliderHeight);
 //    qArea.removeFromLeft(labelWidth);
 //    qSlider.setBounds(qArea);
 //    controlsArea.removeFromTop(margin);
     
-    // Row 9: EQ
+    // row 9: EQ
     auto lowArea = controlsArea.removeFromTop(sliderHeight);
     lowArea.removeFromLeft(labelWidth);
     lowSlider.setBounds(lowArea);
@@ -371,14 +340,10 @@ void HarmoniumPhysicsEngineAudioProcessorEditor::resized() {
     irArea.removeFromTop(5);
     convolutionToggle.setBounds(irArea.removeFromTop(25));
     irStatusLabel.setBounds(irArea.removeFromTop(40));
-    
-//    // MIDI keyboard at bottom
-//    area.removeFromTop(20);
-//    keyboardComponent.setBounds(area.removeFromBottom(80));
+
 }
 
 void HarmoniumPhysicsEngineAudioProcessorEditor::timerCallback() {
-    // get physics values
     double p0 = audioProcessor.getBellowsPressure();
     double p1 = audioProcessor.getChamberPressure();
     double p2 = audioProcessor.getJetPressure();
@@ -458,6 +423,5 @@ void HarmoniumPhysicsEngineAudioProcessorEditor::comboBoxChanged(juce::ComboBox*
     if (comboBoxThatHasChanged == &reedModeSelector) {
         int selectedMode = reedModeSelector.getSelectedId();
         audioProcessor.setReedMode(selectedMode);
-//        DBG("Reed mode changed to: " + juce::String(selectedMode));
     }
 }

@@ -1,9 +1,10 @@
-// PluginProcessor.h
-
 #pragma once
 #include <JuceHeader.h>
 #include "Harmonium.h"
 
+/*
+ * PluginProcessor class handles audio and MIDI processing.
+ */
 class HarmoniumPhysicsEngineAudioProcessor : public juce::AudioProcessor {
 public:
     HarmoniumPhysicsEngineAudioProcessor();
@@ -45,7 +46,6 @@ public:
     void setMasterGain(float value);
     void setReedChamberCapacity(float value);
     void setNarrowJetCapacity(float value);
-    void setPolyphonyMode(bool polyMode);
     void setReedMode(int mode);
     int getReedMode() const;
 
@@ -86,7 +86,6 @@ private:
     std::atomic<float> narrowJetCapacity{0.5f};
     std::atomic<float> qFactor{0.5f};
     std::atomic<float> airConsumption{0.5f};
-    std::atomic<bool> polyphonic{true};
     std::atomic<int> reedMode{1};
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(HarmoniumPhysicsEngineAudioProcessor)

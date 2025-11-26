@@ -1,7 +1,9 @@
-// PluginProcessor.cpp
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+/*
+ * PluginProcessor class handles audio and MIDI processing.
+ */
 HarmoniumPhysicsEngineAudioProcessor::HarmoniumPhysicsEngineAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
      : AudioProcessor (BusesProperties()
@@ -99,7 +101,6 @@ bool HarmoniumPhysicsEngineAudioProcessor::isBusesLayoutSupported(const BusesLay
 void HarmoniumPhysicsEngineAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
     DBG("Preparing to play: SR=" + juce::String(sampleRate) + ", Block=" + juce::String(samplesPerBlock));
     
-    // Create harmonium with physics engine architecture
     harmonium = std::make_unique<Harmonium>(sampleRate);
     
     if (harmonium) {
@@ -117,7 +118,6 @@ void HarmoniumPhysicsEngineAudioProcessor::releaseResources() {
 void HarmoniumPhysicsEngineAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) {
     juce::ScopedNoDenormals noDenormals;
     
-    // Process MIDI messages
     for (const auto metadata : midiMessages) {
         auto message = metadata.getMessage();
         
@@ -130,7 +130,7 @@ void HarmoniumPhysicsEngineAudioProcessor::processBlock(juce::AudioBuffer<float>
             stopNote(frequency);
         }
         else if (message.isController() && message.getControllerNumber() == 1) {
-            // Mod wheel controls bellows pumping
+            
             double modWheelValue = message.getControllerValue() / 127.0;
             setModWheelValue(modWheelValue);
         }
@@ -143,7 +143,6 @@ void HarmoniumPhysicsEngineAudioProcessor::processBlock(juce::AudioBuffer<float>
     auto numChannels = buffer.getNumChannels();
     auto numSamples = buffer.getNumSamples();
     
-    // Process audio using physics engine
     for (int sample = 0; sample < numSamples; ++sample) {
         float harmoniumOutput = harmonium->processSample();
         harmoniumOutput *= masterGain.load();
@@ -154,7 +153,6 @@ void HarmoniumPhysicsEngineAudioProcessor::processBlock(juce::AudioBuffer<float>
     }
 }
 
-// Musical interface
 void HarmoniumPhysicsEngineAudioProcessor::startNote(double frequency) {
     if (harmonium) {
         harmonium->startNote(frequency);
@@ -235,14 +233,6 @@ void HarmoniumPhysicsEngineAudioProcessor::setMasterGain(float value) {
     DBG("Master gain: " + juce::String(value, 2));
 }
 
-void HarmoniumPhysicsEngineAudioProcessor::setPolyphonyMode(bool polyMode) {
-    polyphonic.store(polyMode);
-    if (harmonium) {
-        harmonium->setPolyphonyMode(polyMode);
-        DBG("Polyphony: " + juce::String(polyMode ? "ON" : "OFF"));
-    }
-}
-
 void HarmoniumPhysicsEngineAudioProcessor::setReedMode(int mode) {
     reedMode = juce::jlimit(1, 3, mode);
     if (harmonium) {
@@ -256,7 +246,6 @@ int HarmoniumPhysicsEngineAudioProcessor::getReedMode() const {
     return reedMode.load();
 }
 
-// Physics diagnostics
 double HarmoniumPhysicsEngineAudioProcessor::getBellowsPressure() const {
     return harmonium ? harmonium->getPhysicsState().p0 : 0.0;
 }
@@ -289,7 +278,6 @@ int HarmoniumPhysicsEngineAudioProcessor::getTotalOscillatingReeds() const {
 //    return harmonium ? harmonium->getAverageReedAmplitude() : 0.0;
 //}
 
-// Control
 void HarmoniumPhysicsEngineAudioProcessor::handleMidiCC(int ccNumber, int ccValue) {
     if (ccNumber == 1 && ccValue >= 0 && ccValue <= 127) {
         double modWheelValue = ccValue / 127.0;
@@ -311,7 +299,6 @@ bool HarmoniumPhysicsEngineAudioProcessor::hasEditor() const {
     return true;
 }
 
-// Plugin factory function
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter() {
     return new HarmoniumPhysicsEngineAudioProcessor();
 }

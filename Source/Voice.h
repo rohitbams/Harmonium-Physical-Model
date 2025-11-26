@@ -1,9 +1,9 @@
-// Voice.h
 #pragma once
 #include <JuceHeader.h>
 #include <vector>
 #include "HarmoniumState.h"
 #include "PhysicsEngine.h"
+#include "Bellows.h"
 
 /*
  * The Voice class.
@@ -18,16 +18,23 @@ public:
     };
 
 private:
-    struct ReedInstance {
+    struct Reed {
         HarmoniumState physicsState;
-        HarmoniumPhysicsConfig config;
+        HarmoniumConfig config;
         double detuning_cents;
         
-        ReedInstance(double detune_cents = 0.0) : detuning_cents(detune_cents) {
+        Reed(double detune_cents = 0.0) : detuning_cents(detune_cents) {
             physicsState.reset();
         }
         
-        float processSample(const HarmoniumPhysicsConfig& config, double bellowsFlow, double bellowsPressure, double baseFrequency) {
+        bool isOscillating() const {
+            return std::abs(physicsState.reedPosition) > 1e-5 || std::abs(physicsState.reedVelocity) > 1e-2;
+        }
+        
+        /*
+         * generates audio output steam
+         */
+        float generateSample(const HarmoniumConfig& config, double bellowsFlow, double bellowsPressure, double baseFrequency) {
             // TODO: calculate detuned pitches
             double detunedFreq = PhysicsEngine::calculateDetunedFrequency(baseFrequency, detuning_cents);
             double omega0 = PhysicsEngine::calculateOmega0(detunedFreq);
@@ -41,8 +48,8 @@ private:
         }
     };
 
-    HarmoniumPhysicsConfig physicsConfig;
-    std::vector<ReedInstance> reedInstances;
+    HarmoniumConfig physicsConfig;
+    std::vector<Reed> reedInstances;
     ReedMode reedMode;
     bool isActive = false;
     double currentFrequency = 0;
@@ -87,24 +94,20 @@ public:
         DBG("Note stopped");
     }
     
+    /*
+     * process audio samples
+     */
     float processSample(double bellowsFlowRate, double bellowsPressure) {
         if (!isActive || reedInstances.empty()) return 0.0f;
         
         float mixedOutput = 0.0f;
         double airflowPerReed = bellowsFlowRate / reedInstances.size();
         
-        // process each reed
+        // process each reed instance
         for (auto& reedInstance : reedInstances) {
-            float reedOutput = reedInstance.processSample(physicsConfig, airflowPerReed, bellowsPressure, currentFrequency);
+            float reedOutput = reedInstance.generateSample(physicsConfig, airflowPerReed, bellowsPressure, currentFrequency);
             mixedOutput += reedOutput;
         }
-        
-        // Natural mixing for multiple reeds
-//        if (reedInstances.size() > 1) {
-//            mixedOutput /= std::sqrt(reedInstances.size());
-//        }
-//        DBG("Processing with frequency: " + juce::String(currentFrequency));
-
         return mixedOutput;
     }
     
@@ -163,7 +166,7 @@ public:
     
     bool isOscillating() const {
         for (const auto& reed : reedInstances) {
-            if (reed.physicsState.isOscillating()) {
+            if (reed.isOscillating()) {
                 return true;
             }
         }
@@ -173,7 +176,7 @@ public:
     int getOscillatingReedCount() const {
         int count = 0;
         for (const auto& reed : reedInstances) {
-            if (reed.physicsState.isOscillating()) {
+            if (reed.isOscillating()) {
                 count++;
             }
         }

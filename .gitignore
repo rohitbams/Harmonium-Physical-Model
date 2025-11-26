@@ -1,0 +1,44 @@
+# Archives and backups
+Archive/
+Archive.zip
+*.zip
+
+# Build outputs
+Builds/*/build/
+**/build/
+*.o
+*.a
+*.dylib
+*.so
+*.dll
+*.exe
+*.app
+*.vst3
+*.component
+
+# Xcode user-specific files
+*.xcuserstate
+*.xcuserdatad/
+xcuserdata/
+*.xcuserdata
+**/xcuserdata/
+**/*.xcworkspace/xcuserdata/
+*.xcscmblueprint
+*.xccheckout
+
+# macOS
+.DS_Store
+._*
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo

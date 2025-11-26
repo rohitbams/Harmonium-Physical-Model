@@ -1,7 +1,10 @@
 #pragma once
 #include <JuceHeader.h>
 
-class ConvolutionProcessor {
+/*
+ * ConvolutionProcessor class
+ */
+class Convolution {
 private:
     juce::dsp::Convolution convolution;
     juce::dsp::ProcessSpec spec;
