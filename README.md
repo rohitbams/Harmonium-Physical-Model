@@ -175,9 +175,12 @@ This plugin serves as a prototyping platform for investigating physics-based syn
 - Reed collision dynamics not fully modeled (soft clamping used)
 - Spectral profile is static (frequency-dependent parameters not yet implemented)
 - No modeling of reed manufacturing variations beyond detuning
+- Convolution is not optimised for sample-based processing
+- Lacking timbral diversity of different styles of Harmonium (Delhi, Kolkata)
 
 ## Future Work
 
+- Block-based processing instead of sample-based processing
 - Implementation of higher-order integration schemes (RK4)
 - Frequency-dependent chamber characteristics
 - Reed-to-reed coupling effects
@@ -186,32 +189,14 @@ This plugin serves as a prototyping platform for investigating physics-based syn
 
 ## License
 
-Academic research project - contact author for usage permissions.
+Academic research project - contact for usage permissions.
 
 ## Author
 
-Developed as part of dissertation research at the University of St Andrews.
+Developed by me as part of dissertation research at the University of St Andrews.
 
 ## References
 
 [1] Puranik, N. V., & Scavone, G. P. (2023). Physical modelling synthesis of a harmonium. *Proceedings of Meetings on Acoustics*, 49(1), 035015. https://doi.org/10.1121/2.0001679
 
-### BibTeX
 
-```bibtex
-@article{10.1121/2.0001679,
-    author = {Puranik, Ninad Vijay and Scavone, Gary P.},
-    title = {Physical modelling synthesis of a harmonium},
-    journal = {Proceedings of Meetings on Acoustics},
-    volume = {49},
-    number = {1},
-    pages = {035015},
-    year = {2023},
-    month = {01},
-    abstract = {In this paper we present recent work on the development of a physical model of the hand harmonium, a bellow driven free reed instrument popular in South Asian music. Western free reed instruments like the accordion, the harmonica, the reed organ, etc. share many similarities with the hand harmonium in their physical structure and sound timbre. Previous models and experimental works on western free reed instruments are studied and revisions are proposed to the minimal model of free reeds described by Millot and Baumann (2007) to suitably match the physical setup and the sound timbre of a hand harmonium. The proposed changes allow the physical model to have the bellows pressure as a control parameter. A source-filter structure is suggested to model the acoustic effect of the wooden enclosure of a harmonium, which allows the realization of different timbres in the simulated sound.},
-    issn = {1939-800X},
-    doi = {10.1121/2.0001679},
-    url = {https://doi.org/10.1121/2.0001679},
-    eprint = {https://pubs.aip.org/asa/poma/article-pdf/doi/10.1121/2.0001679/18136805/pma.v49.i1.035015_1.online.pdf},
-}
-```
