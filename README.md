@@ -11,38 +11,25 @@ This project implements a real-time digital harmonium synthesizer as a VST3 and 
 ### Core Components
 
 **PhysicsEngine** ([Source/PhysicsEngine.h](Source/PhysicsEngine.h))
-- Implements the fundamental physics equations governing reed oscillation and air flow
-- Solves coupled differential equations using Euler integration
+- Implements the fundamental coupled differential equations equations governing reed oscillation and air flow
 - Models pressure dynamics across three chambers: bellows (p0), reed chamber (p1), and narrow jet (p2)
-- Generates harmonic content through spectral profiling based on analysis of acoustic recordings
 
 **HarmoniumState** ([Source/HarmoniumState.h](Source/HarmoniumState.h))
 - Contains dynamic state variables: pressures, flow rates, reed displacement and velocity
-- Maintains configuration parameters: physical dimensions, material properties, quality factors
-- Defines spectral shaping coefficients for harmonic generation
 
 **Voice** ([Source/Voice.h](Source/Voice.h))
-- Manages polyphonic voice allocation and stealing
-- Supports three reed configurations: single, double (octave lower), and triple (octave spread)
-- Implements per-reed detuning for realistic timbral variation
-- Processes individual reed instances with distributed airflow
+- Manages polyphonic voice allocation and stealing and supports three reed configurations
 
 **Bellows** ([Source/Bellows.h](Source/Bellows.h))
 - Simulates bellows pumping mechanism through MIDI modulation wheel input
 - Models air mass accumulation and consumption
-- Calculates pressure-driven flow between bellows and reed chambers
-- Implements valve behavior (restricted flow when keys are released)
 
 **Harmonium** ([Source/Harmonium.h](Source/Harmonium.h))
-- Main orchestration class managing six concurrent voices
-- Integrates bellows simulation with voice processing
-- Provides convolution-based impulse response processing for spatial realism
-- Aggregates state information for visualisation
+- Main orchestration class managing six concurrent voices, integrates bellows simulation with voice processing
 
 **Convolution** ([Source/Convolution.h](Source/Convolution.h))
 - Implements FFT-based convolution for acoustic space simulation
 - Supports loading custom impulse response files
-- Can be toggled on/off for dry/wet comparison
 
 ### Plugin Interface
 
@@ -50,11 +37,9 @@ This project implements a real-time digital harmonium synthesizer as a VST3 and 
 - JUCE AudioProcessor implementation for DAW integration
 - Handles MIDI note-on/off events and continuous controller messages
 - Per-sample processing loop calling the physics simulation
-- Exposes parameters for air capacity, consumption rate, reed mode, and master gain
 
 **PluginEditor** ([Source/PluginEditor.h](Source/PluginEditor.h))
 - Graphical user interface for real-time parameter control
-- Visual feedback of internal state variables (pressures, flows, reed position)
 
 ## Physical Model
 
@@ -198,5 +183,6 @@ Developed by me as part of dissertation research at the University of St Andrews
 ## References
 
 [1] Puranik, N. V., & Scavone, G. P. (2023). Physical modelling synthesis of a harmonium. *Proceedings of Meetings on Acoustics*, 49(1), 035015. https://doi.org/10.1121/2.0001679
+
 
 
